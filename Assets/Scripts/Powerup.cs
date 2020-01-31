@@ -8,15 +8,9 @@ public class Powerup : MonoBehaviour
     private float _speed = 3f;
     [SerializeField]
     private string _type = "tripleShot";
-    [SerializeField]
-    private float _bound = -6f;
 
     void Update()
     {
-        if (transform.position.y <= _bound)
-        {
-            Destroy(gameObject);
-        }
         transform.Translate(Vector3.down * _speed * Time.deltaTime);
     }
 

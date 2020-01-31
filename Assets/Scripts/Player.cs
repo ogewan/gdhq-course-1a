@@ -6,8 +6,13 @@ public class Player : MonoBehaviour
 {
     public GameObject laserPrefab;
     public GameObject tripleShotPrefab;
+    public GameObject rotateShotPrefab;
     public GameObject shield;
     public GameObject[] engines;
+    public GameObject thruster;
+    public GameObject boostThruster;
+    public GameObject rotateAim;
+
     public AudioClip laserFire;
     public AudioClip powerUpSound;
 
@@ -19,10 +24,6 @@ public class Player : MonoBehaviour
     [SerializeField]
     private float _speed = 3.5f;
     [SerializeField]
-    private Vector2 _xBound = new Vector2(-11.5f, 10.5f);
-    [SerializeField]
-    private Vector2 _yBound = new Vector2(-6f, 7f);
-    [SerializeField]
     private float _laserOffset = 0.8f;
     [SerializeField]
     private float _fireRate = 0.5f;
@@ -32,6 +33,8 @@ public class Player : MonoBehaviour
     private int _health = 3;
     [SerializeField]
     private int _tripleShotInstances = 0;
+    [SerializeField]
+    private int _rotateShotInstances = 0;
     [SerializeField]
     private int _speedBoostInstances = 0;
     [SerializeField]
@@ -65,7 +68,7 @@ public class Player : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D laser)
     {
-        bool hitLaser = laser.tag == "EnemyLaser";
+        bool hitLaser = laser.tag == "EnemyLaser" || laser.tag == "EnemySuperLaser";
         if (hitLaser)
         {
             Destroy(laser.gameObject);
@@ -80,23 +83,6 @@ public class Player : MonoBehaviour
         float speed = _speedBoostInstances > 0 ? _boostedSpeed : _speed;
         Vector3 direction = new Vector3(horizontalInput, verticalInput, 0);
         transform.Translate(direction * speed * Time.deltaTime);
-        //bounds: -11.5 - 10.5 (x), -6 - 7 (y)
-        float xPos = transform.position.x;
-        float yPos = transform.position.y;
-        float xMin = _xBound[0];
-        float xMax = _xBound[1];
-        float yMin = _yBound[0];
-        float yMax = _yBound[1];
-
-        if (xPos <= xMin || xPos >= xMax)
-        {
-            transform.position = new Vector3(xPos <= xMin ? xMax : xMin, yPos, 0);
-        }
-
-        if (yPos <= yMin || yPos >= yMax)
-        {
-            transform.position = new Vector3(xPos, yPos <= yMin ? yMax : yMin, 0);
-        }
     }
 
     void Shoot()
@@ -105,17 +91,22 @@ public class Player : MonoBehaviour
         bool canFire = Time.time > _fireCooldown;
         if (spacePressed && canFire)
         {
-            FireLaser();
+            Fire();
         }
     }
 
-    void FireLaser()
+    void Fire()
     {
         Vector3 offsetPosition = new Vector3(0, _laserOffset, 0);
-        if (_tripleShotInstances > 0)
+        if (_rotateShotInstances > 0)
+        {
+            Instantiate(rotateShotPrefab, transform.position, rotateAim.transform.rotation);
+        }
+        else if (_tripleShotInstances > 0)
         {
             Instantiate(tripleShotPrefab, transform.position, Quaternion.identity);
-        } else
+        }
+        else
         {
             Instantiate(laserPrefab, transform.position + offsetPosition, Quaternion.identity);
         }
@@ -130,6 +121,9 @@ public class Player : MonoBehaviour
         {
             case "tripleShot":
                 _tripleShotInstances += instances;
+                break;
+            case "rotateShot":
+                _rotateShotInstances += instances;
                 break;
             case "speedBoost":
                 _speedBoostInstances += instances;
@@ -219,7 +213,7 @@ public class Player : MonoBehaviour
 
     public void activatePowerUp(string type)
     {
-        AudioSource.PlayClipAtPoint(powerUpSound, transform.position);
+        AudioSource.PlayClipAtPoint(powerUpSound, transform.position, 10f);
         _powerUpTimer = powerUpRoutine(type);
         StartCoroutine(_powerUpTimer);
     }

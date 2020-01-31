@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    public enum type { Normal, Super, Hyper, Ultra, Tohou };
+
+    [SerializeField]
+    private type enemyType;
+    [SerializeField]
+    private int _health = 1;
     public GameObject laserPrefab;
     public AudioClip laserFire;
     public AudioClip explodeSound;
@@ -12,10 +18,6 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     private float _enemySpeed = 4f;
     [SerializeField]
-    private Vector2 _bounds = new Vector2(-6f, 7f);
-    [SerializeField]
-    private Vector2 _spawnBounds = new Vector2(-11.5f, 10.5f);
-    [SerializeField]
     private int _scoreValue = 10;
     [SerializeField]
     private Player _player;
@@ -23,12 +25,15 @@ public class Enemy : MonoBehaviour
     private bool _destroyed = false;
     private Animator _animator;
     private AudioSource _audioPlayer;
+    private GameObject[] _thrusters;
+    private Collider2D _selfCollider;
 
     void Start()
     {
         _player =  registerManager<Player>("Player");
         _animator = GetComponent<Animator>();
         _audioPlayer = GetComponent<AudioSource>();
+        _selfCollider = GetComponent<Collider2D>();
         _audioPlayer.clip = laserFire;
         StartCoroutine(fireRoutine());
     }
@@ -57,29 +62,55 @@ public class Enemy : MonoBehaviour
             {
                 Destroy(other.gameObject);
             }
-            _destroyed = true;
-            _player.addScore(_scoreValue);
-            _animator.SetTrigger("onEnemyDeath");
-            _audioPlayer.clip = explodeSound;
-            _audioPlayer.Play();
-            _enemySpeed = 0;
-            Destroy(gameObject, 2.8f);
+            Damage();
         }
+    }
+
+    void Damage()
+    {
+        _health--;
+        if (_health <= 0 && !_destroyed)
+        {
+            EnemyDies();
+        }
+    }
+
+    void EnemyDies()
+    {
+        foreach(Transform child in transform)
+        {
+            child.gameObject.SetActive(false);
+        }
+        _destroyed = true;
+        _player.addScore(_scoreValue);
+        _animator.SetTrigger("onEnemyDeath");
+        Debug.Log("scale " + transform.localScale);
+        switch (enemyType)
+        {
+            case type.Super:
+                transform.localScale = transform.localScale * 1.5f;
+                break;
+            case type.Hyper:
+                transform.localScale = transform.localScale * 3f;
+                break;
+            case type.Ultra:
+                transform.localScale = transform.localScale * 6f;
+                break;
+            case type.Tohou:
+                transform.localScale = transform.localScale * 12f;
+                break;
+        }
+        Debug.Log("scale to " + transform.localScale);
+        Debug.Break();
+        _audioPlayer.clip = explodeSound;
+        _audioPlayer.Play();
+        _enemySpeed = 0;
+        Destroy(gameObject, 2.8f);
     }
 
     void Movement()
     {
         transform.Translate(Vector3.down * _enemySpeed * Time.deltaTime);
-        float yPos = transform.position.y;
-        float xMin = _spawnBounds[0];
-        float xMax = _spawnBounds[1];
-        float yMin = _bounds[0];
-        float yMax = _bounds[1];
-        if (yPos <= yMin)
-        {
-            float spawnPos = Random.Range(xMin, xMax);
-            transform.position = new Vector3(spawnPos, yMax, 0);
-        }
     }
 
     IEnumerator fireRoutine()
@@ -92,7 +123,7 @@ public class Enemy : MonoBehaviour
             yield return new WaitForSeconds(spawnTime);
             if (!_destroyed)
             {
-                Instantiate(laserPrefab, transform.position, Quaternion.identity);
+                Instantiate(laserPrefab, transform.position, transform.rotation);
                 _audioPlayer.Play();
             }
         }

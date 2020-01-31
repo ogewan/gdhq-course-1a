@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TripleShot : MonoBehaviour
+public class MultiShot : MonoBehaviour
 {
     void Update()
     {
