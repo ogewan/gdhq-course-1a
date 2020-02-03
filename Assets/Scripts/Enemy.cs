@@ -28,9 +28,12 @@ public class Enemy : MonoBehaviour
     private GameObject[] _thrusters;
     private Collider2D _selfCollider;
 
+    private BoundManager _boundManager;
+
     void Start()
     {
-        _player =  registerManager<Player>("Player");
+        _player = registerManager<Player>("Player");
+        _boundManager = registerManager<BoundManager>("BoundManager");
         _animator = GetComponent<Animator>();
         _audioPlayer = GetComponent<AudioSource>();
         _selfCollider = GetComponent<Collider2D>();
@@ -100,8 +103,8 @@ public class Enemy : MonoBehaviour
                 transform.localScale = transform.localScale * 12f;
                 break;
         }
-        Debug.Log("scale to " + transform.localScale);
-        Debug.Break();
+        //Debug.Log("scale to " + transform.localScale);
+        //Debug.Break();
         _audioPlayer.clip = explodeSound;
         _audioPlayer.Play();
         _enemySpeed = 0;
@@ -123,7 +126,7 @@ public class Enemy : MonoBehaviour
             yield return new WaitForSeconds(spawnTime);
             if (!_destroyed)
             {
-                Instantiate(laserPrefab, transform.position, transform.rotation);
+                _boundManager.bsInsantiate(laserPrefab, transform.position, transform.rotation);
                 _audioPlayer.Play();
             }
         }
