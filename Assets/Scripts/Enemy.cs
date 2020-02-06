@@ -29,10 +29,11 @@ public class Enemy : MonoBehaviour
     private Collider2D _selfCollider;
 
     private BoundManager _boundManager;
+    private GameManager _gameManager;
 
     void Start()
     {
-        _player = registerManager<Player>("Player");
+        _gameManager = registerManager<GameManager>("GameManager");
         _boundManager = registerManager<BoundManager>("BoundManager");
         _animator = GetComponent<Animator>();
         _audioPlayer = GetComponent<AudioSource>();
@@ -85,7 +86,7 @@ public class Enemy : MonoBehaviour
             child.gameObject.SetActive(false);
         }
         _destroyed = true;
-        _player.addScore(_scoreValue);
+        _gameManager.addScore(_scoreValue);
         _animator.SetTrigger("onEnemyDeath");
         Debug.Log("scale " + transform.localScale);
         switch (enemyType)

@@ -23,11 +23,21 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GameObject _explosion;
     [SerializeField]
-    private int _score = 0;
-    [SerializeField]
     private float _speed = 3.5f;
     [SerializeField]
+    private float _thrusterFuel = 100f;
+    [SerializeField]
+    private float _drainRate = 0.3f;
+    [SerializeField]
+    private float _drainReduction = 0.95f;
+    [SerializeField]
+    private float _rechargeRate = 8f;
+    [SerializeField]
+    private float _drainAccumulation = 0f;
+    [SerializeField]
     private float _boostedSpeed = 8.5f;
+    [SerializeField]
+    private bool _overHeat = false;
     [SerializeField]
     private float _laserOffset = 0.8f;
     [SerializeField]
@@ -109,20 +119,70 @@ public class Player : MonoBehaviour
     {
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
-        bool shiftPressed = Input.GetKey(KeyCode.LeftShift);
-        if (shiftPressed && !boostThruster.activeSelf)
+        bool boostMode = Input.GetKey(KeyCode.LeftShift) && !_overHeat;
+        thrusterControl();
+        float speed = boostMode ? _boostedSpeed : _speed;
+        Vector3 direction = new Vector3(horizontalInput, verticalInput, 0);
+        transform.Translate(direction * speed * Time.deltaTime);
+    }
+
+    void thrusterControl()
+    {
+        bool boostMode = Input.GetKey(KeyCode.LeftShift) && !_overHeat;
+        if (boostMode && !boostThruster.activeSelf)
         {
             boostThruster.SetActive(true);
             thruster.SetActive(false);
         }
-        else if (!shiftPressed && boostThruster.activeSelf)
+        else if (!boostMode && boostThruster.activeSelf)
         {
             boostThruster.SetActive(false);
             thruster.SetActive(true);
         }
-        float speed = shiftPressed ? _boostedSpeed : _speed;
-        Vector3 direction = new Vector3(horizontalInput, verticalInput, 0);
-        transform.Translate(direction * speed * Time.deltaTime);
+
+        if (boostMode)
+        {
+            activeThruster();
+        } else
+        {
+            inactiveThruster();
+        }
+        _uIManager.updateThruster(_thrusterFuel);
+    }
+
+    void inactiveThruster()
+    {
+        if (_drainAccumulation > 0)
+        {
+            _drainAccumulation -= _drainRate * Time.deltaTime * _drainReduction;
+        }
+        else
+        {
+            _drainAccumulation = 0;
+        }
+
+        if (_thrusterFuel < 100)
+        {
+            _thrusterFuel += _rechargeRate * Time.deltaTime;
+        }
+        else
+        {
+            _overHeat = false;
+            _thrusterFuel = 100;
+        }
+    }
+
+    void activeThruster()
+    {
+        _drainAccumulation += _drainRate * Time.deltaTime;
+        if (_thrusterFuel > 0)
+        {
+            _thrusterFuel -= _drainAccumulation;
+        }
+        else
+        {
+            _overHeat = true;
+        }
     }
 
     void Shoot()
@@ -135,19 +195,24 @@ public class Player : MonoBehaviour
         bool canFire = Time.time > _fireCooldown;
         bool superAmmo =  tripleShotActive || rotateShotActive || homingShotActive || glitchShotActive;
         bool avaliableAmmo = _ammo > 0 || superAmmo;
-        if (spacePressed && canFire && avaliableAmmo)
+        if (spacePressed && canFire) 
         {
-            Fire();
-            if (!superAmmo)
+            if (avaliableAmmo)
             {
-                _ammo--;
+                Fire();
+                if (!superAmmo)
+                {
+                    _ammo--;
+                }
+            }
+            else
+            {
+                Debug.Log("OUT OF AMMO");
+                _audioPlayer.clip = laserFail;
+                _audioPlayer.Play();
             }
         }
-        if (!avaliableAmmo)
-        {
-            _audioPlayer.clip = laserFail;
-            _audioPlayer.Play();
-        }
+        
     }
 
     void Fire()
@@ -323,11 +388,5 @@ public class Player : MonoBehaviour
         AudioSource.PlayClipAtPoint(powerUpSound, camera);
         _powerUpTimer = powerUpRoutine(type);
         StartCoroutine(_powerUpTimer);
-    }
-
-    public void addScore(int score)
-    {
-        _score += score;
-        _uIManager.updateScore(_score);
     }
 }

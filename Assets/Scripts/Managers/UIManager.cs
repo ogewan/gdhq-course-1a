@@ -8,6 +8,8 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private Text _scoreText;
     [SerializeField]
+    private Text _highScoreText;
+    [SerializeField]
     private Image _livesImage;
     [SerializeField]
     private Text _gameOverText;
@@ -15,6 +17,8 @@ public class UIManager : MonoBehaviour
     private Text _restartText;
     [SerializeField]
     private Sprite[] _lifeSprites;
+    [SerializeField]
+    private Slider _thrusterBar;
 
     void Start()
     {
@@ -39,9 +43,19 @@ public class UIManager : MonoBehaviour
         _scoreText.text = "Score: " + score;
     }
 
+    public void updateHighScore(int score)
+    {
+        _highScoreText.text = "High Score: " + score;
+    }
+
     public void updateLives(int currentLives)
     {
         _livesImage.sprite = _lifeSprites[currentLives];
+    }
+
+    public void updateThruster(float fuel)
+    {
+        _thrusterBar.value = fuel;
     }
 
     public void gameOver()
