@@ -111,7 +111,7 @@ public class BoundManager : MonoBehaviour
 
     void Enemy(float xPos, float yPos, Collider2D enemy)
     {
-        Debug.Log("OobX " + outXBound(xPos) + " OobY " + outYBound(yPos));
+        //Debug.Log("OobX " + outXBound(xPos) + " OobY " + outYBound(yPos));
         if (outXBound(xPos))
         {
             float spawnNewYPos = Random.Range(_yMin, _yMax);

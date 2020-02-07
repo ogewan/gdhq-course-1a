@@ -5,6 +5,10 @@ using UnityEngine;
 public class SpawnManager : MonoBehaviour
 {
     [SerializeField]
+    private Registry _managers;
+    [SerializeField]
+    private Player _player;
+    [SerializeField]
     private Spawnable[] items = { Spawnable.init() };
     [SerializeField]
     private int[] shared;
@@ -126,7 +130,12 @@ public class SpawnManager : MonoBehaviour
                 float xMax = spawnBounds[1];
                 float spawnX = Random.Range(xMin, xMax);
                 Vector3 spawnPos = new Vector3(spawnX, spawnHeight, 0);
-                Instantiate(item, spawnPos, Quaternion.identity, container);
+                GameObject newItem = Instantiate(item, spawnPos, Quaternion.identity, container);
+                if (newItem.tag == "Enemy")
+                {
+                    newItem.GetComponent<Enemy>().managers = _managers;
+                    newItem.GetComponent<Enemy>().player = _player;
+                }
             }
         }
     }

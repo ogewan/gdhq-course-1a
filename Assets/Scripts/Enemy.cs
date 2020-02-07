@@ -10,7 +10,7 @@ public class Enemy : MonoBehaviour
     private type enemyType;
     [SerializeField]
     private int _health = 1;
-    public GameObject laserPrefab;
+    public LaserArsenal armory;
     public AudioClip laserFire;
     public AudioClip explodeSound;
     [SerializeField]
@@ -19,25 +19,30 @@ public class Enemy : MonoBehaviour
     private float _enemySpeed = 4f;
     [SerializeField]
     private int _scoreValue = 10;
-    [SerializeField]
-    private Player _player;
+    public Player player;
     [SerializeField]
     private bool _destroyed = false;
+    [SerializeField]
     private Animator _animator;
+    [SerializeField]
     private AudioSource _audioPlayer;
-    private GameObject[] _thrusters;
+    [SerializeField]
     private Collider2D _selfCollider;
-
+    //[SerializeField]
+    //private GameObject[] _thrusters;
+    public Registry managers;
     private BoundManager _boundManager;
     private GameManager _gameManager;
+    private StoryManager _storyManager;
 
     void Start()
     {
-        _gameManager = registerManager<GameManager>("GameManager");
-        _boundManager = registerManager<BoundManager>("BoundManager");
-        _animator = GetComponent<Animator>();
-        _audioPlayer = GetComponent<AudioSource>();
-        _selfCollider = GetComponent<Collider2D>();
+        _gameManager = managers.gameManager;
+        _boundManager = managers.boundManager;
+        _storyManager = managers.storyManager;
+        //_animator = GetComponent<Animator>();
+        //_audioPlayer = GetComponent<AudioSource>();
+        //_selfCollider = GetComponent<Collider2D>();
         _audioPlayer.clip = laserFire;
         StartCoroutine(fireRoutine());
     }
@@ -127,13 +132,13 @@ public class Enemy : MonoBehaviour
             yield return new WaitForSeconds(spawnTime);
             if (!_destroyed)
             {
-                _boundManager.bsInsantiate(laserPrefab, transform.position, transform.rotation);
+                _boundManager.bsInsantiate(armory.normalPrefab, transform.position, transform.rotation);
                 _audioPlayer.Play();
             }
         }
     }
 
-    T registerManager<T>(string name)
+    T registerComponent<T>(string name)
     {
         GameObject manager = GameObject.Find(name);
         if (manager)

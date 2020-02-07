@@ -102,17 +102,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyType: 0
   _health: 1
-  laserPrefab: {fileID: 4242802954381892226, guid: 32764516d40cd5a4699a77a07f1210d7,
-    type: 3}
+  armory: {fileID: 5785800567083993149, guid: c5a080ec07de75947a7bdd0d61df0f3e, type: 3}
   laserFire: {fileID: 8300000, guid: 75676f361bdfeaf41a46623e95df3dbc, type: 3}
   explodeSound: {fileID: 8300000, guid: a885c043fab7e46438bba03ba9dab6bc, type: 3}
   fireTimeRange: {x: 3, y: 7}
   _enemySpeed: 4
-  _bounds: {x: -6, y: 7}
-  _spawnBounds: {x: -9, y: 9}
   _scoreValue: 10
   _player: {fileID: 0}
   _destroyed: 0
+  _animator: {fileID: 3104084390791979401}
+  _audioPlayer: {fileID: 7477116901751347175}
+  _selfCollider: {fileID: 3105963300327838464}
 --- !u!50 &5245035945381954877
 Rigidbody2D:
   serializedVersion: 4
