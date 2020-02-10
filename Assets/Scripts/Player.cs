@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public enum shotType { normal, triple, rotate, homing, glitch };
     public LaserArsenal armory;
     public GameObject shield;
     public GameObject mediumShield;
@@ -20,6 +21,8 @@ public class Player : MonoBehaviour
 
     [SerializeField]
     private GameObject _explosion;
+    [SerializeField]
+    private float dmgShake = 1f;
     [SerializeField]
     private float _speed = 3.5f;
     [SerializeField]
@@ -45,6 +48,7 @@ public class Player : MonoBehaviour
     private IEnumerator _powerUpTimer;
     private UIManager _uIManager;
     private AudioSource _audioPlayer;
+    private Animator _animator;
 
     [System.Serializable]
     public struct InstanceCounter
@@ -129,8 +133,10 @@ public class Player : MonoBehaviour
         _boundManager = _managers.boundManager;
         _uIManager.updateLives(_stats.health);
         _audioPlayer = GetComponent<AudioSource>();
+        _animator = GetComponent<Animator>();
+        updateAmmo();
     }
-    
+
     void Update()
     {
         Movement();
@@ -156,6 +162,8 @@ public class Player : MonoBehaviour
         float speed = boostMode ? _boostedSpeed : _speed;
         Vector3 direction = new Vector3(horizontalInput, verticalInput, 0);
         transform.Translate(direction * speed * Time.deltaTime);
+        _animator.SetBool("turningLeft", horizontalInput < 0);
+        _animator.SetBool("turningRight", horizontalInput > 0);
     }
 
     void thrusterControl()
@@ -221,16 +229,26 @@ public class Player : MonoBehaviour
         }
     }
 
+    void updateAmmo()
+    {
+        bool tsActive = _powerUpStatus.tripleShot > 0;
+        bool rsActive = _powerUpStatus.rotateShot > 0;
+        bool hsActive = _powerUpStatus.homingShot > 0;
+        bool gsActive = _powerUpStatus.glitchShot > 0;
+        _uIManager.updateAmmo(_stats.ammo, gsActive ? shotType.glitch : hsActive ? shotType.homing : rsActive ? shotType.rotate : tsActive ? shotType.triple : shotType.normal);
+    }
+
     void Shoot()
     {
-        bool tripleShotActive = _powerUpStatus.tripleShot > 0;
-        bool rotateShotActive = _powerUpStatus.rotateShot > 0;
-        bool homingShotActive = _powerUpStatus.homingShot > 0;
-        bool glitchShotActive = _powerUpStatus.glitchShot > 0;
+        bool tsActive = _powerUpStatus.tripleShot > 0;
+        bool rsActive = _powerUpStatus.rotateShot > 0;
+        bool hsActive = _powerUpStatus.homingShot > 0;
+        bool gsActive = _powerUpStatus.glitchShot > 0;
         bool spacePressed = Input.GetKeyDown(KeyCode.Space);
         bool canFire = Time.time > _fireRate.cooldown;
-        bool superAmmo =  tripleShotActive || rotateShotActive || homingShotActive || glitchShotActive;
+        bool superAmmo =  tsActive || rsActive || hsActive || gsActive;
         bool avaliableAmmo = _stats.ammo > 0 || superAmmo;
+
         if (spacePressed && canFire) 
         {
             if (avaliableAmmo)
@@ -240,6 +258,7 @@ public class Player : MonoBehaviour
                 {
                     _stats.ammo--;
                 }
+                updateAmmo();
             }
             else
             {
@@ -341,6 +360,7 @@ public class Player : MonoBehaviour
             default:
                 break;
         }
+        updateAmmo();
         bool rotateActive = _powerUpStatus.rotateShot > 0;
         bool homingActive = _powerUpStatus.homingShot > 0;
         bool glitchActive = _powerUpStatus.glitchShot > 0;
@@ -422,6 +442,7 @@ public class Player : MonoBehaviour
             return;
         }
         _stats.health--;
+        _uIManager.shakeScreen(dmgShake);
         _uIManager.updateLives(_stats.health);
         if (_stats.health <= 0)
         {

@@ -9,15 +9,17 @@ public class SpawnManager : MonoBehaviour
     [SerializeField]
     private Player _player;
     [SerializeField]
-    private Spawnable[] items = { Spawnable.init() };
+    private List<GameObject> spawnQueue = new List<GameObject>();
     [SerializeField]
-    private int[] shared;
+    private Spawnable[] items;
     [SerializeField]
-    private Vector2 _spawnBounds = new Vector2(-11.5f, 10.5f);
+    private Vector3 _spawnPosition = Vector3.zero;
     [SerializeField]
-    private float _spawnHeight = 7f;
+    private Vector3Bool _randomSpawn = new Vector3Bool(true, false, false);
     [SerializeField]
     private bool _spawnActive = true;
+    private BoundManager _boundManager;
+    private BoundManager.boundingBox _bbox;
 
     [System.Serializable]
     public struct Spawnlet
@@ -40,56 +42,85 @@ public class SpawnManager : MonoBehaviour
         public GameObject container;
         public Vector2 timeRange;
         public int spawnCount;
-        public Vector2 spawnBounds;
-        public float spawnHeight;
+        public Vector2 spawnPosition;
+        public Vector3Bool randomSpawn;
         public bool spawnActive;
         [HideInInspector]
         public IEnumerator spawnTimer;
-        [HideInInspector]
-        public List<GameObject> probabilityTable;
+        public Randomizer item;
 
         Spawnable(Spawnlet[] _pool, GameObject _container, Vector2 _timeRange)
         {
             this.pool = _pool;
             this.container = _container;
             this.spawnCount = -1;
-            this.spawnBounds = new Vector2(-11.5f, 10.5f);
-            this.spawnHeight = 7f;
+            this.spawnPosition = Vector3.zero;
+            this.randomSpawn = new Vector3Bool(false, false, false);
             this.spawnActive = true;
             this.timeRange = _timeRange;
             this.spawnTimer = null;
-            this.probabilityTable = null;
-            buildProbabilityTable();
+            this.item = new Randomizer(_pool);
         }
-        // whenever the pool is modified, including adding new items or changing probabilities
-        // buildProbabilityTable must be called to update the table used to get objects
-        public void buildProbabilityTable()
-        {
-            if (this.pool != null)
-            {
-                this.probabilityTable = new List<GameObject>();
-                foreach (Spawnlet item in this.pool)
-                {
-                    int count = item.probability;
-                    for (int i = 0; i < count; i++)
-                    {
-                        this.probabilityTable.Add(item.obj);
-                    }
-                }
-            }
-        }
-        public static Spawnable init()
-        {
-            return new Spawnable(null, null, new Vector2(5f, 6f));
-        }
+
         public GameObject getObject()
         {
-            if (this.probabilityTable == null || this.probabilityTable.Count == 0)
+            return this.item.Get();
+        }
+    }
+
+    [System.Serializable]
+    public struct Vector3Bool
+    {
+        public bool x;
+        public bool y;
+        public bool z;
+
+        public Vector3Bool(bool x, bool y, bool z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+    }
+
+    [System.Serializable]
+    public struct Randomizer
+    {
+        [SerializeField]
+        private Spawnlet[] pool;
+        [SerializeField]
+        private List<GameObject> spawnTable;
+
+        private static List<GameObject> buildSpawnTable(Spawnlet[] items)
+        {
+            List<GameObject> table = new List<GameObject>();
+            foreach (Spawnlet item in items)
             {
-                this.buildProbabilityTable();
+                int count = item.probability;
+                for (int i = 0; i < count; i++)
+                {
+                    table.Add(item.obj);
+                }
             }
-            int target = Random.Range(0, this.probabilityTable.Count);
-            return this.probabilityTable[target];
+            return table;
+        }
+
+        public void changeOdds(int index, int probability)
+        {
+            this.pool[index].probability = probability;
+            this.spawnTable = buildSpawnTable(this.pool);
+        }
+
+        public GameObject Get()
+        {
+            int target = Random.Range(0, this.spawnTable.Count);
+            return this.spawnTable[target];
+        }
+
+        public Randomizer(Spawnlet[] spawnlets)
+        {
+            this.pool = spawnlets;
+            this.spawnTable = buildSpawnTable(spawnlets);
         }
     }
 
@@ -105,31 +136,43 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        _boundManager = _managers.boundManager;
+        _bbox = _boundManager.bbox();
+    }
+
     IEnumerator TimedSpawn(Spawnable spawnable)
     {
         yield return new WaitForSeconds(3f);
+
+        if (spawnable.container == null)
+        {
+            spawnable.container = Instantiate(new GameObject("container"), transform);
+        }
         while (_spawnActive)
         {
-            GameObject item = spawnable.getObject();
-            Transform container = (spawnable.container) ? spawnable.container.transform : null;
+            Transform container = spawnable.container.transform;
             Vector2 range = spawnable.timeRange;
             int spawnCount = spawnable.spawnCount;
-            Vector2 spawnBounds = (spawnable.spawnBounds != new Vector2()) ? spawnable.spawnBounds : _spawnBounds;
-            float spawnHeight = (spawnable.spawnHeight != 0f) ? spawnable.spawnHeight : _spawnHeight;
             bool iAmActive = spawnable.spawnActive;
-
             float minTime = Mathf.Max(0, Mathf.Min(range[0], range[1]));
-            float maxTime = Mathf.Max(1, Mathf.Max(range[0], range[1]));
+            float maxTime = Mathf.Min(1, Mathf.Max(range[0], range[1]));
             float spawnTime = Random.Range(minTime, maxTime);
+
             yield return new WaitForSeconds(spawnTime);
-            int itemCount = GameObject.FindGameObjectsWithTag(item.tag).Length;
+
+            GameObject item = spawnable.getObject();
+            int itemCount = container.childCount;
             bool canSpawn = spawnCount >= itemCount || spawnCount == -1;
             if (item && canSpawn && iAmActive && _spawnActive)
             {
-                float xMin = spawnBounds[0];
-                float xMax = spawnBounds[1];
-                float spawnX = Random.Range(xMin, xMax);
-                Vector3 spawnPos = new Vector3(spawnX, spawnHeight, 0);
+                BoundManager.boundingBox bbox = _boundManager.bbox();
+                float spawnableX = spawnable.spawnPosition != null ? spawnable.spawnPosition.x : _spawnPosition.x;
+                float spawnableY = spawnable.spawnPosition != null ? spawnable.spawnPosition.y : _spawnPosition.y;
+                float spawnX = _randomSpawn.x ? Random.Range(_bbox.xMin, _bbox.xMax) : Mathf.Clamp(spawnableX, _bbox.xMin, _bbox.xMax);
+                float spawnY = _randomSpawn.y ? Random.Range(_bbox.yMin, _bbox.yMax) : Mathf.Clamp(spawnableY, _bbox.yMin, _bbox.yMax);
+                Vector3 spawnPos = new Vector3(spawnX, spawnY, 0);
                 GameObject newItem = Instantiate(item, spawnPos, Quaternion.identity, container);
                 if (newItem.tag == "Enemy")
                 {

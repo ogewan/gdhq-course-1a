@@ -7,24 +7,31 @@ using UnityEngine;
 public class BoundManager : MonoBehaviour
 {
     [SerializeField]
-    private float _xMin;
-    [SerializeField]
-    private float _xMax;
-    [SerializeField]
-    private float _yMin;
-    [SerializeField]
-    private float _yMax;
-    [SerializeField]
+    private boundingBox _bbox;
+
+    [System.Serializable]
+    public struct boundingBox
+    {
+        public float xMin;
+        public float xMax;
+        public float yMin;
+        public float yMax;
+
+        public boundingBox(Vector3 min, Vector3 max)
+        {
+            this.xMin = min.x;
+            this.xMax = max.x;
+            this.yMin = min.y;
+            this.yMax = max.y;
+        }
+    }
 
     void Start()
     {
         Collider2D boundingbox = GetComponent<Collider2D>();
         Vector3 _min = boundingbox.bounds.min;
         Vector3 _max = boundingbox.bounds.max;
-        _xMin = _min.x;
-        _xMax = _max.x;
-        _yMin = _min.y;
-        _yMax = _max.y;
+        _bbox = new boundingBox(_min, _max);
     }
 
 
@@ -59,12 +66,12 @@ public class BoundManager : MonoBehaviour
 
     bool outXBound(float xPos)
     {
-        return xPos <= _xMin || xPos >= _xMax;
+        return xPos <= _bbox.xMin || xPos >= _bbox.xMax;
     }
 
     bool outYBound(float yPos)
     {
-        return yPos <= _yMin || yPos >= _yMax;
+        return yPos <= _bbox.yMin || yPos >= _bbox.yMax;
     }
 
     bool oob(Vector3 pos)
@@ -100,12 +107,12 @@ public class BoundManager : MonoBehaviour
     {
         if (outXBound(xPos))
         {
-            player.transform.position = new Vector3(xPos <= _xMin ? _xMax : _xMin, yPos, 0);
+            player.transform.position = new Vector3(xPos <= _bbox.xMin ? _bbox.xMax : _bbox.xMin, yPos, 0);
         }
 
         if (outYBound(yPos))
         {
-            player.transform.position = new Vector3(xPos, yPos <= _yMin ? _yMax : _yMin, 0);
+            player.transform.position = new Vector3(xPos, yPos <= _bbox.yMin ? _bbox.yMax : _bbox.yMin, 0);
         }
     }
 
@@ -114,14 +121,14 @@ public class BoundManager : MonoBehaviour
         //Debug.Log("OobX " + outXBound(xPos) + " OobY " + outYBound(yPos));
         if (outXBound(xPos))
         {
-            float spawnNewYPos = Random.Range(_yMin, _yMax);
-            enemy.transform.position = new Vector3(xPos <= _xMin ? _xMax : _xMin, spawnNewYPos, 0);
+            float spawnNewYPos = Random.Range(_bbox.yMin, _bbox.yMax);
+            enemy.transform.position = new Vector3(xPos <= _bbox.xMin ? _bbox.xMax : _bbox.xMin, spawnNewYPos, 0);
         }
 
         if (outYBound(yPos))
         {
-            float spawnNewXPos = Random.Range(_xMin, _xMax);
-            enemy.transform.position = new Vector3(spawnNewXPos, yPos <= _yMin ? _yMax : _yMin, 0);
+            float spawnNewXPos = Random.Range(_bbox.xMin, _bbox.xMax);
+            enemy.transform.position = new Vector3(spawnNewXPos, yPos <= _bbox.yMin ? _bbox.yMax : _bbox.yMin, 0);
             //Debug.Log("yPos " + yPos + " yMin " + _yMin + " yMax " + _yMax);
         }
     }
@@ -132,15 +139,15 @@ public class BoundManager : MonoBehaviour
 
         if (outXBound(xPos))
         {
-            float spawnNewYPos = Random.Range(_yMin, _yMax);
-            enemy.transform.position = new Vector3(xPos <= _xMin ? _xMax : _xMin, spawnNewYPos, 0);
+            float spawnNewYPos = Random.Range(_bbox.yMin, _bbox.yMax);
+            enemy.transform.position = new Vector3(xPos <= _bbox.xMin ? _bbox.xMax : _bbox.xMin, spawnNewYPos, 0);
         }
 
         if (outYBound(yPos))
         {
-            float spawnNewXPos = Random.Range(_xMin, _xMax);
-            enemy.transform.position = new Vector3(spawnNewXPos, yPos <= _yMin ? _yMax : _yMin, 0);
-            Debug.Log("yPos " + yPos + " yMin " + _yMin + " yMax " + _yMax);
+            float spawnNewXPos = Random.Range(_bbox.xMin, _bbox.xMax);
+            enemy.transform.position = new Vector3(spawnNewXPos, yPos <= _bbox.yMin ? _bbox.yMax : _bbox.yMin, 0);
+            Debug.Log("yPos " + yPos + " yMin " + _bbox.yMin + " yMax " + _bbox.yMax);
         }
         SpriteRenderer sprite = enemy.GetComponent<SpriteRenderer>();
         sprite.color = new Color(0, 1, 1);
@@ -153,5 +160,10 @@ public class BoundManager : MonoBehaviour
         //Debug.Break();
         GameObject possible = (!oob(position)) ? (GameObject)Instantiate(original, position, rotation) : null;
         return checkGameObject(possible);
+    }
+
+    public boundingBox bbox()
+    {
+        return _bbox;
     }
 }

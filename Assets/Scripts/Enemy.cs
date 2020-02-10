@@ -93,7 +93,7 @@ public class Enemy : MonoBehaviour
         _destroyed = true;
         _gameManager.addScore(_scoreValue);
         _animator.SetTrigger("onEnemyDeath");
-        Debug.Log("scale " + transform.localScale);
+        //Debug.Log("scale " + transform.localScale);
         switch (enemyType)
         {
             case type.Super:
