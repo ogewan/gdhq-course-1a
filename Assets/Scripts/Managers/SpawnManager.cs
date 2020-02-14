@@ -7,7 +7,7 @@ public class SpawnManager : MonoBehaviour
     [SerializeField]
     private Registry _managers;
     [SerializeField]
-    private Player _player;
+    private Transform _player;
     [SerializeField]
     private List<GameObject> spawnQueue = new List<GameObject>();
     [SerializeField]
@@ -18,8 +18,11 @@ public class SpawnManager : MonoBehaviour
     private Vector3Bool _randomSpawn = new Vector3Bool(true, false, false);
     [SerializeField]
     private bool _spawnActive = true;
+    [SerializeField]
+    private int oldSpawnCount;
     private BoundManager _boundManager;
     private BoundManager.boundingBox _bbox;
+    private GameManager _gameManager;
 
     [System.Serializable]
     public struct Spawnlet
@@ -27,7 +30,7 @@ public class SpawnManager : MonoBehaviour
         public GameObject obj;
         public int probability;
 
-        Spawnlet(GameObject _obj, int _probability = 1)
+        public Spawnlet(GameObject _obj, int _probability = 1)
         {
             this.obj = _obj;
             this.probability = _probability;
@@ -42,6 +45,7 @@ public class SpawnManager : MonoBehaviour
         public GameObject container;
         public Vector2 timeRange;
         public int spawnCount;
+        public bool useParentSpawnPosition;
         public Vector2 spawnPosition;
         public Vector3Bool randomSpawn;
         public bool spawnActive;
@@ -54,17 +58,29 @@ public class SpawnManager : MonoBehaviour
             this.pool = _pool;
             this.container = _container;
             this.spawnCount = -1;
+            this.useParentSpawnPosition = true;
             this.spawnPosition = Vector3.zero;
             this.randomSpawn = new Vector3Bool(false, false, false);
             this.spawnActive = true;
             this.timeRange = _timeRange;
             this.spawnTimer = null;
-            this.item = new Randomizer(_pool);
+            this.item = default;
         }
 
         public GameObject getObject()
         {
-            return this.item.Get();
+            GameObject item = this.item.Get();
+            if (item == null)
+            {
+                this.item = new Randomizer(this.pool);
+                item = this.item.Get();
+            }
+            return item;
+        }
+
+        public void init()
+        {
+            this.item = new Randomizer(this.pool);
         }
     }
 
@@ -113,6 +129,10 @@ public class SpawnManager : MonoBehaviour
 
         public GameObject Get()
         {
+            if (this.spawnTable.Count <= 0)
+            {
+                return null;
+            }
             int target = Random.Range(0, this.spawnTable.Count);
             return this.spawnTable[target];
         }
@@ -140,6 +160,7 @@ public class SpawnManager : MonoBehaviour
     {
         _boundManager = _managers.boundManager;
         _bbox = _boundManager.bbox();
+        _gameManager = _managers.gameManager;
     }
 
     IEnumerator TimedSpawn(Spawnable spawnable)
@@ -163,23 +184,46 @@ public class SpawnManager : MonoBehaviour
             yield return new WaitForSeconds(spawnTime);
 
             GameObject item = spawnable.getObject();
+            // ENEMY UNIQUE
+            Enemy enemy;
+            if (item.tag == "Enemy")
+            {
+                enemy = item.GetComponent<Enemy>();
+                enemy.getType();
+                if (_gameManager.firstSpawn(enemy.getType()))
+                {
+                    oldSpawnCount = spawnCount;
+                    spawnCount = 1;
+                    spawnQueue.Add(item);
+                }
+            }
             int itemCount = container.childCount;
             bool canSpawn = spawnCount >= itemCount || spawnCount == -1;
             if (item && canSpawn && iAmActive && _spawnActive)
             {
                 BoundManager.boundingBox bbox = _boundManager.bbox();
-                float spawnableX = spawnable.spawnPosition != null ? spawnable.spawnPosition.x : _spawnPosition.x;
-                float spawnableY = spawnable.spawnPosition != null ? spawnable.spawnPosition.y : _spawnPosition.y;
-                float spawnX = _randomSpawn.x ? Random.Range(_bbox.xMin, _bbox.xMax) : Mathf.Clamp(spawnableX, _bbox.xMin, _bbox.xMax);
-                float spawnY = _randomSpawn.y ? Random.Range(_bbox.yMin, _bbox.yMax) : Mathf.Clamp(spawnableY, _bbox.yMin, _bbox.yMax);
+                float spawnableX = spawnable.useParentSpawnPosition ? _spawnPosition.x : spawnable.spawnPosition.x;
+                float spawnableY = spawnable.useParentSpawnPosition ? _spawnPosition.y : spawnable.spawnPosition.y;
+                float spawnX = spawnable.randomSpawn.x || _randomSpawn.x ? Random.Range(_bbox.xMin, _bbox.xMax) : Mathf.Clamp(spawnableX, _bbox.xMin, _bbox.xMax);
+                float spawnY = spawnable.randomSpawn.y || _randomSpawn.y ? Random.Range(_bbox.yMin, _bbox.yMax) : Mathf.Clamp(spawnableY, _bbox.yMin, _bbox.yMax);
                 Vector3 spawnPos = new Vector3(spawnX, spawnY, 0);
                 GameObject newItem = Instantiate(item, spawnPos, Quaternion.identity, container);
+                setPausible(newItem, _managers);
                 if (newItem.tag == "Enemy")
                 {
                     newItem.GetComponent<Enemy>().managers = _managers;
-                    newItem.GetComponent<Enemy>().player = _player;
+                    newItem.GetComponent<Enemy>().player = _player.transform;
                 }
             }
+        }
+    }
+
+    public static void setPausible(GameObject item, Registry manager)
+    {
+        Pausible pauseControl = item.GetComponent<Pausible>();
+        if (pauseControl)
+        {
+            pauseControl._gameManager = manager.gameManager;
         }
     }
 

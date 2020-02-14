@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class BoundManager : MonoBehaviour
 {
+    public Registry _managers;
     [SerializeField]
     private boundingBox _bbox;
 
@@ -51,6 +52,9 @@ public class BoundManager : MonoBehaviour
                 break;
             case "EnemySuperLaser":
                 EnemySuperLaser(x, y, other);
+                break;
+            case "Star":
+                star(x, y, other);
                 break;
             case "TEST":
                 break;
@@ -116,42 +120,38 @@ public class BoundManager : MonoBehaviour
         }
     }
 
-    void Enemy(float xPos, float yPos, Collider2D enemy)
+    void randomWrap(float xPos, float yPos, Collider2D item)
     {
-        //Debug.Log("OobX " + outXBound(xPos) + " OobY " + outYBound(yPos));
         if (outXBound(xPos))
         {
             float spawnNewYPos = Random.Range(_bbox.yMin, _bbox.yMax);
-            enemy.transform.position = new Vector3(xPos <= _bbox.xMin ? _bbox.xMax : _bbox.xMin, spawnNewYPos, 0);
+            item.transform.position = new Vector3(xPos <= _bbox.xMin ? _bbox.xMax : _bbox.xMin, spawnNewYPos, 0);
         }
+
 
         if (outYBound(yPos))
         {
             float spawnNewXPos = Random.Range(_bbox.xMin, _bbox.xMax);
-            enemy.transform.position = new Vector3(spawnNewXPos, yPos <= _bbox.yMin ? _bbox.yMax : _bbox.yMin, 0);
-            //Debug.Log("yPos " + yPos + " yMin " + _yMin + " yMax " + _yMax);
+            item.transform.position = new Vector3(spawnNewXPos, yPos <= _bbox.yMin ? _bbox.yMax : _bbox.yMin, 0);
         }
+    }
+
+    void Enemy(float xPos, float yPos, Collider2D enemy)
+    {
+        randomWrap(xPos, yPos, enemy);
     }
 
     void EnemySuperLaser(float xPos, float yPos, Collider2D enemy)
     {
-        //Debug.Log("OobX " + outXBound(xPos) + " OobY " + outYBound(yPos));
-
-        if (outXBound(xPos))
-        {
-            float spawnNewYPos = Random.Range(_bbox.yMin, _bbox.yMax);
-            enemy.transform.position = new Vector3(xPos <= _bbox.xMin ? _bbox.xMax : _bbox.xMin, spawnNewYPos, 0);
-        }
-
-        if (outYBound(yPos))
-        {
-            float spawnNewXPos = Random.Range(_bbox.xMin, _bbox.xMax);
-            enemy.transform.position = new Vector3(spawnNewXPos, yPos <= _bbox.yMin ? _bbox.yMax : _bbox.yMin, 0);
-            Debug.Log("yPos " + yPos + " yMin " + _bbox.yMin + " yMax " + _bbox.yMax);
-        }
+        randomWrap(xPos, yPos, enemy);
         SpriteRenderer sprite = enemy.GetComponent<SpriteRenderer>();
         sprite.color = new Color(0, 1, 1);
         enemy.tag = "EnemyLaser";
+    }
+
+    void star(float xPos, float yPos, Collider2D item)
+    {
+        randomWrap(xPos, yPos, item);
     }
 
     public GameObject bsInsantiate(Object original, Vector3 position, Quaternion rotation)
@@ -159,6 +159,7 @@ public class BoundManager : MonoBehaviour
         //Debug.Log("Position " + position + " oob " + oob(position) + " oobY " + outYBound(position.y) + " oobX " + outXBound(position.x));
         //Debug.Break();
         GameObject possible = (!oob(position)) ? (GameObject)Instantiate(original, position, rotation) : null;
+        SpawnManager.setPausible(possible, _managers);
         return checkGameObject(possible);
     }
 

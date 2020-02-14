@@ -5,15 +5,18 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public Registry _managers;
     [SerializeField]
     private bool _gameOver = false;
+    [SerializeField]
+    private bool _pause = false;
     [SerializeField]
     private int _score = 0;
     [SerializeField]
     private int _highScore;
     private UIManager _uIManager;
     private GameManager _newManager;
-
+    private StoryManager _storyManager;
 
     void OnEnable()
     {
@@ -25,32 +28,16 @@ public class GameManager : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    void Awake()
+    void Start()
     {
-        _uIManager = registerManager<UIManager>("Canvas");
+        _uIManager = _managers.uiManager;
+        _storyManager = _managers.storyManager;
     }
 
     void Update()
     {
         scoreCheck();
         handleControlKeys();
-    }
-
-    public void endGame()
-    {
-        _gameOver = true;
-    }
-
-    public void addScore(int score)
-    {
-        _score += score;
-        _uIManager.updateScore(_score);
-    }
-
-    public void setHighScore(int score)
-    {
-        _highScore = score;
-        _uIManager.updateHighScore(_highScore);
     }
 
     void scoreCheck()
@@ -71,21 +58,85 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void ascend(int sceneNumber)
+    {
+        transform.parent = null;
+        DontDestroyOnLoad(gameObject);
+        SceneManager.LoadScene(sceneNumber, LoadSceneMode.Single); //current game scene
+        gameObject.name = "old";
+    }
+
     void handleControlKeys()
     {
         bool restart = Input.GetKeyDown(KeyCode.R);
+        bool mainmenu = Input.GetKeyDown(KeyCode.M);
+        bool pause = Input.GetKeyDown(KeyCode.P);
         bool escape = Input.GetKeyDown(KeyCode.Escape);
-        if (_gameOver && restart)
+        if (_gameOver)
         {
-            transform.parent = null;
-            DontDestroyOnLoad(gameObject);
-            SceneManager.LoadScene(1, LoadSceneMode.Single); //current game scene
-            gameObject.name = "old";
+            if (restart)
+            {
+                ascend(1);
+            }
+        } else
+        {
+            if (pause)
+            {
+
+            }
+            if (mainmenu)
+            {
+                ascend(0);
+            }
         }
+
         if (escape)
         {
             Application.Quit();
         }
+    }
+
+    public bool isPaused()
+    {
+        return _pause;
+    }
+
+    public void endGame()
+    {
+        _gameOver = true;
+    }
+
+    public void addScore(int score)
+    {
+        _score += score;
+        _uIManager.updateScore(_score);
+    }
+
+    public void addKill(Enemy.type type, int kill=1)
+    {
+        switch(type)
+        {
+            case Enemy.type.Super:
+                _uIManager.yellowToken(kill);
+                break;
+            case Enemy.type.Hyper:
+                _uIManager.redToken(kill);
+                break;
+            case Enemy.type.Ultra:
+                _uIManager.greenToken(kill);
+                break;
+        }
+    }
+
+    public void setHighScore(int score)
+    {
+        _highScore = score;
+        _uIManager.updateHighScore(_highScore);
+    }
+
+    public bool firstSpawn(Enemy.type type)
+    {
+        return _storyManager.firstSpawn(type);
     }
 
     T registerManager<T>(string name)

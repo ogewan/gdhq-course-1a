@@ -91,10 +91,16 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 7051753972123704697, guid: 48a856e3a8f777243a20fe62c8d24a09,
         type: 3}
+    - target: {fileID: 6224052928147081905, guid: 84e9ae00a9178d0499c6f22428181765,
+        type: 3}
+      propertyPath: glitchShotPrefab
+      value: 
+      objectReference: {fileID: 7318180432945461968, guid: 0486f2ee4936c404ea7596d8bf162eb3,
+        type: 3}
     - target: {fileID: 7100787354409092079, guid: 84e9ae00a9178d0499c6f22428181765,
         type: 3}
       propertyPath: m_Name
-      value: LaserArsenal
+      value: LaserArsenal Variant (Enemy)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 84e9ae00a9178d0499c6f22428181765, type: 3}

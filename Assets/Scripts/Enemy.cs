@@ -19,7 +19,7 @@ public class Enemy : MonoBehaviour
     private float _enemySpeed = 4f;
     [SerializeField]
     private int _scoreValue = 10;
-    public Player player;
+    public Transform player;
     [SerializeField]
     private bool _destroyed = false;
     [SerializeField]
@@ -28,15 +28,17 @@ public class Enemy : MonoBehaviour
     private AudioSource _audioPlayer;
     [SerializeField]
     private Collider2D _selfCollider;
-    //[SerializeField]
-    //private GameObject[] _thrusters;
+    [SerializeField]
+    private float _scaler = 1f;
     public Registry managers;
+    private SpawnManager.Randomizer _projectile;
     private BoundManager _boundManager;
     private GameManager _gameManager;
     private StoryManager _storyManager;
 
     void Start()
     {
+        EnemySetup();
         _gameManager = managers.gameManager;
         _boundManager = managers.boundManager;
         _storyManager = managers.storyManager;
@@ -92,25 +94,9 @@ public class Enemy : MonoBehaviour
         }
         _destroyed = true;
         _gameManager.addScore(_scoreValue);
+        _gameManager.addKill(enemyType);
         _animator.SetTrigger("onEnemyDeath");
-        //Debug.Log("scale " + transform.localScale);
-        switch (enemyType)
-        {
-            case type.Super:
-                transform.localScale = transform.localScale * 1.5f;
-                break;
-            case type.Hyper:
-                transform.localScale = transform.localScale * 3f;
-                break;
-            case type.Ultra:
-                transform.localScale = transform.localScale * 6f;
-                break;
-            case type.Tohou:
-                transform.localScale = transform.localScale * 12f;
-                break;
-        }
-        //Debug.Log("scale to " + transform.localScale);
-        //Debug.Break();
+        transform.localScale = transform.localScale * _scaler;
         _audioPlayer.clip = explodeSound;
         _audioPlayer.Play();
         _enemySpeed = 0;
@@ -120,6 +106,53 @@ public class Enemy : MonoBehaviour
     void Movement()
     {
         transform.Translate(Vector3.down * _enemySpeed * Time.deltaTime);
+    }
+
+    void EnemySetup()
+    {
+        SpawnManager.Spawnlet[] pool;
+        SpawnManager.Spawnlet normal = new SpawnManager.Spawnlet(armory.normalPrefab);
+        SpawnManager.Spawnlet rotate = new SpawnManager.Spawnlet(armory.rotateShotPrefab);
+        SpawnManager.Spawnlet homing = new SpawnManager.Spawnlet(armory.homingShotPrefab, 50);
+        SpawnManager.Spawnlet super = new SpawnManager.Spawnlet(armory.superShotPrefab);
+        SpawnManager.Spawnlet portal = new SpawnManager.Spawnlet(armory.glitchShotPrefab);
+
+        switch (enemyType)
+        {
+            case type.Normal:
+                pool = new SpawnManager.Spawnlet[1] { normal };
+                _projectile = new SpawnManager.Randomizer(pool);
+                break;
+            case type.Super:
+                _scaler = 1.5f;
+                pool = new SpawnManager.Spawnlet[3] { normal, rotate, portal };
+                _projectile = new SpawnManager.Randomizer(pool);
+                break;
+            case type.Hyper:
+                _scaler = 3f;
+                pool = new SpawnManager.Spawnlet[4] { normal, rotate, homing, portal };
+                _projectile = new SpawnManager.Randomizer(pool);
+                break;
+            case type.Ultra:
+                _scaler = 6f;
+                pool = new SpawnManager.Spawnlet[4] { super, rotate, homing, portal };
+                _projectile = new SpawnManager.Randomizer(pool);
+                break;
+            case type.Tohou:
+                _scaler = 12f;
+                pool = new SpawnManager.Spawnlet[5] { normal, super, rotate, homing, portal };
+                _projectile = new SpawnManager.Randomizer(pool);
+                break;
+        }
+    }
+
+    void chooseTarget(GameObject laser)
+    {
+        HomingLaser laserCPU = laser.GetComponent<HomingLaser>();
+        if (laserCPU != null)
+        {
+            laserCPU.setTarget(player);
+        }
     }
 
     IEnumerator fireRoutine()
@@ -132,7 +165,9 @@ public class Enemy : MonoBehaviour
             yield return new WaitForSeconds(spawnTime);
             if (!_destroyed)
             {
-                _boundManager.bsInsantiate(armory.normalPrefab, transform.position, transform.rotation);
+                GameObject laser = _projectile.Get();
+                chooseTarget(laser);
+                _boundManager.bsInsantiate(laser, transform.position, transform.rotation);
                 _audioPlayer.Play();
             }
         }
@@ -147,5 +182,10 @@ public class Enemy : MonoBehaviour
         }
         Debug.LogError(name + " not found");
         return default(T);
+    }
+
+    public type getType()
+    {
+        return enemyType;
     }
 }

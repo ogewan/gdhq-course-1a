@@ -13,7 +13,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2104947432, guid: 20a45b43ae2b8e94dad036bbfdcc309f, type: 3}
       propertyPath: acceleration
-      value: -4
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2104947432, guid: 20a45b43ae2b8e94dad036bbfdcc309f, type: 3}
+      propertyPath: glitched
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4330227549641586747, guid: 20a45b43ae2b8e94dad036bbfdcc309f,
         type: 3}

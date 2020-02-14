@@ -22,6 +22,8 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private Text _ammoText;
     [SerializeField]
+    private KillToken _killIcon;
+    [SerializeField]
     private Transform mainCamera;
     [SerializeField]
     private CameraShake shakeControl = new CameraShake(0);
@@ -141,6 +143,36 @@ public class UIManager : MonoBehaviour
                 break;
         }
         //Debug.Log(_ammoText.text);
+    }
+
+    public void yellowToken(int count)
+    {
+        _killIcon.yellowToken(count);
+    }
+
+    public void redToken(int count)
+    {
+        _killIcon.redToken(count);
+    }
+
+    public void greenToken(int count)
+    {
+        _killIcon.greenToken(count);
+    }
+
+    public void toggleYellow()
+    {
+        _killIcon.toggleYellow();
+    }
+
+    public void toggleRed()
+    {
+        _killIcon.toggleRed();
+    }
+
+    public void toggleGreen()
+    {
+        _killIcon.toggleGreen();
     }
 
     public void gameOver()

@@ -10,6 +10,7 @@ TagManager:
   - EnemyLaser
   - EnemySuperLaser
   - TEST
+  - Star
   layers:
   - Default
   - TransparentFX
