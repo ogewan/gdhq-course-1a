@@ -9,9 +9,16 @@ public class Powerup : MonoBehaviour
     private float _speed = 0f;
     [SerializeField]
     private type _type;
+    private Pausible _pausible;
+
+    void Start()
+    {
+        _pausible = GetComponent<Pausible>();
+    }
 
     void Update()
     {
+        if (_pausible && _pausible.isPaused()) return;
         transform.Translate(Vector3.down * _speed * Time.deltaTime);
     }
 

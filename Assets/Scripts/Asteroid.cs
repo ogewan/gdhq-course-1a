@@ -10,37 +10,28 @@ public class Asteroid : MonoBehaviour
     private GameObject _explosion;
     [SerializeField]
     private SpawnManager _spawnManager;
+    private Pausible _pausible;
 
     void Start()
     {
-        _spawnManager = registerManager<SpawnManager>("SpawnManager");
+        _pausible = GetComponent<Pausible>();
     }
 
     void Update()
     {
+        if (_pausible && _pausible.isPaused()) return;
         transform.Rotate(Vector3.forward * Time.deltaTime * _rotSpeed);
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
         bool hitLaser = other.tag == "Laser";
-        if (hitLaser)
+        if (hitLaser && _spawnManager)
         {
             Destroy(other.gameObject);
             _spawnManager.startSpawning();
             Instantiate(_explosion, transform.position, Quaternion.identity);
             Destroy(gameObject, 0.5f);
         }
-    }
-
-    T registerManager<T>(string name)
-    {
-        GameObject manager = GameObject.Find(name);
-        if (manager)
-        {
-            return manager.GetComponent<T>();
-        }
-        Debug.LogError(name + " not found");
-        return default(T);
     }
 }

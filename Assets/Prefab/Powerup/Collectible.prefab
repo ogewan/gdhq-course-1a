@@ -318,6 +318,7 @@ GameObject:
   - component: {fileID: 2974677695352657973}
   - component: {fileID: 7668548880614079448}
   - component: {fileID: 3131262642441030627}
+  - component: {fileID: 7968796951795841008}
   m_Layer: 0
   m_Name: Collectible
   m_TagString: Powerup
@@ -406,6 +407,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _speed: 0
   _type: 0
+--- !u!114 &7968796951795841008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4481395154233420858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b44ccbf155207f4da7808867717ddda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameManager: {fileID: 0}
 --- !u!1 &6996802794143764610
 GameObject:
   m_ObjectHideFlags: 0

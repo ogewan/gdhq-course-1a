@@ -5,18 +5,23 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public enum mode { easy, hard, endless };
     public Registry _managers;
     [SerializeField]
     private bool _gameOver = false;
     [SerializeField]
     private bool _pause = false;
     [SerializeField]
+    private bool _unlockedEndless = false;
+    [SerializeField]
     private int _score = 0;
     [SerializeField]
     private int _highScore;
+    private mode _mode;
     private UIManager _uIManager;
     private GameManager _newManager;
     private StoryManager _storyManager;
+    private MainMenu _mainMenu;
 
     void OnEnable()
     {
@@ -51,10 +56,17 @@ public class GameManager : MonoBehaviour
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         _newManager = registerManager<GameManager>("GameManager");
+        _mainMenu = registerManager<MainMenu>("Canvas");
         if (gameObject.name == "old" && _newManager)
         {
             _newManager.setHighScore(_highScore);
+            _newManager.setMode(_mode);
             //Destroy(gameObject);
+        }
+        if (_mainMenu && _unlockedEndless)
+        {
+            _mainMenu.endlessButton.SetActive(true);
+            Destroy(gameObject);
         }
     }
 
@@ -78,16 +90,14 @@ public class GameManager : MonoBehaviour
             {
                 ascend(1);
             }
-        } else
+        } else if (pause)
         {
-            if (pause)
-            {
-
-            }
-            if (mainmenu)
-            {
-                ascend(0);
-            }
+            _pause = !_pause;
+            _uIManager.pauseToggle();
+        }
+        if (mainmenu)
+        {
+            ascend(0);
         }
 
         if (escape)
@@ -134,9 +144,19 @@ public class GameManager : MonoBehaviour
         _uIManager.updateHighScore(_highScore);
     }
 
+    public void setMode(mode gameMode)
+    {
+        _mode = gameMode;
+    }
+
     public bool firstSpawn(Enemy.type type)
     {
         return _storyManager.firstSpawn(type);
+    }
+
+    public void unlockEndlessMode()
+    {
+        _unlockedEndless = true;
     }
 
     T registerManager<T>(string name)

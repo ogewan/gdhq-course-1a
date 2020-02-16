@@ -7,7 +7,7 @@ public class StoryManager : MonoBehaviour
     public Registry managers;
     private SpawnManager _spawnManager;
     [SerializeField]
-    private enemyStatus _enemyTriggers;
+    private enemyStatus _enemyTriggers = new enemyStatus(0);
     [SerializeField]
     private int _stage = 1;
     private int[][] _scoreTriggers = {
@@ -25,6 +25,12 @@ public class StoryManager : MonoBehaviour
     {
         public Dictionary<Enemy.type, bool> first;
         public Dictionary<Enemy.type, int> killed;
+
+        public enemyStatus(int init = 0)
+        {
+            this.first = new Dictionary<Enemy.type, bool>();
+            this.killed = new Dictionary<Enemy.type, int>();
+        }
     }
 
     void Start()

@@ -9,14 +9,17 @@ public class HomingLaser : MonoBehaviour
     public float spinSpeed = 5f;
     public bool glitched = false;
     Laser self;
+    private Pausible _pausible;
 
     void Start()
     {
         self = GetComponent<Laser>();
+        _pausible = GetComponent<Pausible>();
     }
 
     void Update()
     {
+        if (_pausible && _pausible.isPaused()) return;
         if (target)
         {
             if (!glitched)

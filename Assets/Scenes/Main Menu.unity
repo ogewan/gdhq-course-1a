@@ -277,7 +277,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1134183764}
-        m_MethodName: loadGame
+        m_MethodName: easyGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -353,7 +353,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1134183763}
-  m_RootOrder: 2
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -418,7 +418,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &828815475
 RectTransform:
   m_ObjectHideFlags: 0
@@ -432,7 +432,7 @@ RectTransform:
   m_Children:
   - {fileID: 1348209573}
   m_Father: {fileID: 1134183763}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -481,7 +481,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 828815477}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1134183764}
+        m_MethodName: endlessGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &828815477
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -703,9 +714,9 @@ RectTransform:
   m_Children:
   - {fileID: 409142515}
   - {fileID: 558749175}
-  - {fileID: 593426663}
   - {fileID: 1151471543}
   - {fileID: 828815475}
+  - {fileID: 593426663}
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -726,6 +737,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 241ec9ac3c955b7489442add96dc4d56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  endlessButton: {fileID: 828815474}
 --- !u!1 &1151471542
 GameObject:
   m_ObjectHideFlags: 0
@@ -758,7 +770,7 @@ RectTransform:
   m_Children:
   - {fileID: 2085390915}
   m_Father: {fileID: 1134183763}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
@@ -807,7 +819,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1151471545}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1134183764}
+        m_MethodName: hardGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1151471545
 MonoBehaviour:
   m_ObjectHideFlags: 0

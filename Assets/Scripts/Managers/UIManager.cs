@@ -24,6 +24,8 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private KillToken _killIcon;
     [SerializeField]
+    private Text _pauseText;
+    [SerializeField]
     private Transform mainCamera;
     [SerializeField]
     private CameraShake shakeControl = new CameraShake(0);
@@ -173,6 +175,12 @@ public class UIManager : MonoBehaviour
     public void toggleGreen()
     {
         _killIcon.toggleGreen();
+    }
+
+    public void pauseToggle()
+    {
+        bool paused = _pauseText.gameObject.activeInHierarchy;
+        _pauseText.gameObject.SetActive(!paused);
     }
 
     public void gameOver()

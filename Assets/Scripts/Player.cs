@@ -49,6 +49,7 @@ public class Player : MonoBehaviour
     private UIManager _uIManager;
     private AudioSource _audioPlayer;
     private Animator _animator;
+    private Pausible _pausible;
 
     [System.Serializable]
     public struct InstanceCounter
@@ -131,6 +132,7 @@ public class Player : MonoBehaviour
         _uIManager = _managers.uiManager;
         _gameManager = _managers.gameManager;
         _boundManager = _managers.boundManager;
+        _pausible = GetComponent<Pausible>();
         _uIManager.updateLives(_stats.health);
         _audioPlayer = GetComponent<AudioSource>();
         _animator = GetComponent<Animator>();
@@ -139,6 +141,7 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        if (_pausible && _pausible.isPaused()) return;
         Movement();
         Shoot();
     }

@@ -9,7 +9,7 @@ public class SpawnManager : MonoBehaviour
     [SerializeField]
     private Transform _player;
     [SerializeField]
-    private List<GameObject> spawnQueue = new List<GameObject>();
+    private Queue<GameObject> spawnQueue = new Queue<GameObject>();
     [SerializeField]
     private Spawnable[] items;
     [SerializeField]
@@ -183,7 +183,7 @@ public class SpawnManager : MonoBehaviour
 
             yield return new WaitForSeconds(spawnTime);
 
-            GameObject item = spawnable.getObject();
+            GameObject item = spawnQueue.Count > 1 ? spawnQueue.Dequeue() : spawnable.getObject();
             // ENEMY UNIQUE
             Enemy enemy;
             if (item.tag == "Enemy")
@@ -194,7 +194,7 @@ public class SpawnManager : MonoBehaviour
                 {
                     oldSpawnCount = spawnCount;
                     spawnCount = 1;
-                    spawnQueue.Add(item);
+                    spawnQueue.Enqueue(item);
                 }
             }
             int itemCount = container.childCount;
@@ -223,7 +223,7 @@ public class SpawnManager : MonoBehaviour
         Pausible pauseControl = item.GetComponent<Pausible>();
         if (pauseControl)
         {
-            pauseControl._gameManager = manager.gameManager;
+            pauseControl.gameManager = manager.gameManager;
         }
     }
 

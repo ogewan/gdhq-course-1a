@@ -35,6 +35,7 @@ public class Enemy : MonoBehaviour
     private BoundManager _boundManager;
     private GameManager _gameManager;
     private StoryManager _storyManager;
+    private Pausible _pausible;
 
     void Start()
     {
@@ -42,6 +43,7 @@ public class Enemy : MonoBehaviour
         _gameManager = managers.gameManager;
         _boundManager = managers.boundManager;
         _storyManager = managers.storyManager;
+        _pausible = GetComponent<Pausible>();
         //_animator = GetComponent<Animator>();
         //_audioPlayer = GetComponent<AudioSource>();
         //_selfCollider = GetComponent<Collider2D>();
@@ -51,6 +53,7 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
+        if (_pausible && _pausible.isPaused()) return;
         Movement();
     }
 
@@ -95,6 +98,10 @@ public class Enemy : MonoBehaviour
         _destroyed = true;
         _gameManager.addScore(_scoreValue);
         _gameManager.addKill(enemyType);
+        if (enemyType == type.Tohou)
+        {
+            _gameManager.unlockEndlessMode();
+        }
         _animator.SetTrigger("onEnemyDeath");
         transform.localScale = transform.localScale * _scaler;
         _audioPlayer.clip = explodeSound;
