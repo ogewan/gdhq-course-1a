@@ -35,7 +35,6 @@ public class BoundManager : MonoBehaviour
         _bbox = new boundingBox(_min, _max);
     }
 
-
     void OnTriggerExit2D(Collider2D other)
     {
         float x = other.transform.position.x;
@@ -154,7 +153,7 @@ public class BoundManager : MonoBehaviour
         randomWrap(xPos, yPos, item);
     }
 
-    public GameObject bsInsantiate(Object original, Vector3 position, Quaternion rotation)
+    public GameObject bsInstantiate(Object original, Vector3 position, Quaternion rotation)
     {
         //Debug.Log("Position " + position + " oob " + oob(position) + " oobY " + outYBound(position.y) + " oobX " + outXBound(position.x));
         //Debug.Break();

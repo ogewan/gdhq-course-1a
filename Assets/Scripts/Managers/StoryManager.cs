@@ -1,23 +1,53 @@
-﻿using System.Collections;
+﻿//using System.Func;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+ * Story Manager is responsible for change spawn behavior based on certain conditions
+ */
 public class StoryManager : MonoBehaviour
 {
     public Registry managers;
+    public GameObject hyperEnemy;
+    public GameObject ultraEnemy;
+    public GameObject tohouEnemy;
+    public GameObject starCollectible;
+
     private SpawnManager _spawnManager;
+    private BoundManager _boundManager;
+    [SerializeField]
+    private Transform _playerPosition;
+    [SerializeField]
+    private Transform _enemyContainer;
+    [SerializeField]
+    private Transform _powerupContainer;
     [SerializeField]
     private enemyStatus _enemyTriggers = new enemyStatus(0);
     [SerializeField]
+    private int _superSpawnIndex = 1;
+    [SerializeField]
+    private int _superSpawnCount = 1;
+    [SerializeField]
+    private int _hyperSpawnIndex = 2;
+    [SerializeField]
+    private int _hyperSpawnCount = 0;
+    [SerializeField]
+    private int _ultraSpawnIndex = 3;
+    [SerializeField]
+    private int _ultraSpawnCount = 0;
+    [SerializeField]
     private int _stage = 1;
-    private int[][] _scoreTriggers = {
-        new int[] { },
-        new int[] { 100, 200, 300, 400, 500 },
-        new int[] { 1100, 1200, 1300, 1400, 1500, 2000 },
-        new int[] { 3000, 6000, 9000 },
-        new int[] { 100000, 20000, 30000 },
-        new int[] { },
-        new int[] { }
+    [SerializeField]
+    private int _recordedScore = 0;
+    private int[] _scoreGates = { 0, 100, 200, 300, 400, 500, 1000, 1100, 1200, 1300, 1400, 1500, 2000, 3000, 6000, 9000, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 };
+    private Dictionary<Enemy.type, int> _killTriggers = new Dictionary<Enemy.type, int>
+    {
+        { Enemy.type.Normal, 0 },
+        { Enemy.type.Super, 3 },
+        { Enemy.type.Hyper, 3 },
+        { Enemy.type.Ultra, 3 },
+        { Enemy.type.Tohou, 1 }
     };
 
     [System.Serializable]
@@ -36,6 +66,28 @@ public class StoryManager : MonoBehaviour
     void Start()
     {
         _spawnManager = managers.spawnManager;
+        _boundManager = managers.boundManager;
+    }
+
+    bool multipleOf3(Enemy.type type)
+    {
+        Dictionary<Enemy.type, int> killed = _enemyTriggers.killed;
+        return killed[type] % 3 == 0 && killed[type] == 0;
+    }
+
+    int floorMinima(int value, int[] sortedArray)
+    {
+        int minima = value;
+
+        foreach (int i in sortedArray)
+        {
+            if (value <= i)
+            {
+                return minima;
+            }
+            minima = i;
+        }
+        return minima;
     }
 
     public bool firstSpawn(Enemy.type type)
@@ -49,25 +101,85 @@ public class StoryManager : MonoBehaviour
         return true;
     }
 
-    public void killCount(Enemy.type type)
+    public void addKill(Enemy.type type)
     {
         Dictionary<Enemy.type, int> killed = _enemyTriggers.killed;
-        bool status = killed.ContainsKey(type);
-        
-        if (status)
-        {
-            killed[type]++;
-            if (killed[type] % 3 == 0 && killed[type] == 0)
-            {
+        SpawnManager.Spawnable[] items = _spawnManager.getItems();
 
+        if (!killed.ContainsKey(type))
+        {
+            killed[type] = 0;
+        }
+        killed[type]++;
+        if (killed[type] == _killTriggers[type])
+        {
+            //Generally, the stage will be change to a specific number for a killed type
+            //However, enemy types are spawned sequentially, so it shouldn't be possible to hit gates out of order
+            _stage++;
+            switch (_stage)
+            {
+                case 1:
+                    break;
+                case 2:
+                    _spawnManager.specialSpawn(hyperEnemy, items[0], _enemyContainer);
+                    break;
+                case 3:
+                    _spawnManager.specialSpawn(ultraEnemy, items[0], _enemyContainer);
+                    break;
+                case 4:
+                    GameObject tohou = _boundManager.bsInstantiate(tohouEnemy, new Vector3(0, 4), Quaternion.identity);
+
+                    SpawnManager.setPausible(tohou, managers);
+                    tohou.GetComponent<Enemy>().managers = managers;
+                    tohou.GetComponent<Enemy>().player = _playerPosition;
+                    tohou.transform.parent = _enemyContainer;
+                    break;
+                case 5:
+                    //Spawn star
+                    GameObject star =_boundManager.bsInstantiate(starCollectible, new Vector3(0, 6), Quaternion.identity);
+                    star.transform.parent = _powerupContainer;
+                    //Debug.Break();
+                    break;
             }
         }
     }
 
-    bool multipleOf3(Enemy.type type)
+    public void scoreCheck(int score)
     {
-        Dictionary<Enemy.type, int> killed = _enemyTriggers.killed;
-        return killed[type] % 3 == 0 && killed[type] == 0;
+        int quantizedScore = floorMinima(score, _scoreGates);
+        SpawnManager.Spawnable[] items = _spawnManager.getItems();
+
+        if (_recordedScore != quantizedScore)
+        {
+            _recordedScore = quantizedScore;
+            GameObject target = null;
+            bool changeOdds = true;
+            int targetIndex = 0;
+            int targetCount = 0;
+            if (quantizedScore < 2000 && _superSpawnCount < 11)
+            {
+                targetIndex = _superSpawnIndex;
+                targetCount = ++_superSpawnCount;
+            }
+            else if (quantizedScore < 10000 && _hyperSpawnCount < 6)
+            {
+                target = hyperEnemy;
+                targetIndex = _hyperSpawnIndex;
+                targetCount = ++_hyperSpawnCount;
+            }
+            else if (_ultraSpawnCount < 6)
+            {
+                target = ultraEnemy;
+                targetIndex = _ultraSpawnIndex;
+                targetCount = ++_ultraSpawnCount;
+            }
+            else
+            {
+                changeOdds = false;
+            }
+            if (changeOdds) items[0].changeOdds(targetIndex, targetCount);
+            if (target != null) _spawnManager.specialSpawn(target, items[0], _enemyContainer);
+        }
     }
 }
 

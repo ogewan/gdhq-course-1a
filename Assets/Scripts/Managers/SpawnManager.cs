@@ -5,11 +5,11 @@ using UnityEngine;
 public class SpawnManager : MonoBehaviour
 {
     [SerializeField]
+    private Queue<GameObjectWP> spawnQueue = new Queue<GameObjectWP>();
+    [SerializeField]
     private Registry _managers;
     [SerializeField]
     private Transform _player;
-    [SerializeField]
-    private Queue<GameObject> spawnQueue = new Queue<GameObject>();
     [SerializeField]
     private Spawnable[] items;
     [SerializeField]
@@ -23,6 +23,19 @@ public class SpawnManager : MonoBehaviour
     private BoundManager _boundManager;
     private BoundManager.boundingBox _bbox;
     private GameManager _gameManager;
+
+    [System.Serializable]
+    private struct GameObjectWP
+    {
+        public GameObject item;
+        public Transform parent;
+
+        public GameObjectWP (GameObject item, Transform parent)
+        {
+            this.item = item;
+            this.parent = parent;
+        }
+    }
 
     [System.Serializable]
     public struct Spawnlet
@@ -64,23 +77,39 @@ public class SpawnManager : MonoBehaviour
             this.spawnActive = true;
             this.timeRange = _timeRange;
             this.spawnTimer = null;
-            this.item = default;
+            this.item = null;
         }
 
         public GameObject getObject()
         {
-            GameObject item = this.item.Get();
-            if (item == null)
+            init();
+            GameObject target = item.Get();
+            if (target == null)
             {
-                this.item = new Randomizer(this.pool);
-                item = this.item.Get();
+                rebuild();
+                target = item.Get();
             }
-            return item;
+            return target;
         }
 
-        public void init()
+        public void rebuild()
         {
-            this.item = new Randomizer(this.pool);
+            init();
+            item.rebuild(pool);
+        }
+
+        public void changeOdds(int index, int probability)
+        {
+            pool[index].probability = probability;
+            rebuild();
+        }
+
+        private void init()
+        {
+            if (item == null)
+            {
+                this.item = new Randomizer(pool);
+            }
         }
     }
 
@@ -99,13 +128,15 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
-    [System.Serializable]
-    public struct Randomizer
+    public class Randomizer
     {
         [SerializeField]
-        private Spawnlet[] pool;
-        [SerializeField]
         private List<GameObject> spawnTable;
+
+        public Randomizer(Spawnlet[] spawnlets)
+        {
+            this.spawnTable = buildSpawnTable(spawnlets);
+        }
 
         private static List<GameObject> buildSpawnTable(Spawnlet[] items)
         {
@@ -121,10 +152,9 @@ public class SpawnManager : MonoBehaviour
             return table;
         }
 
-        public void changeOdds(int index, int probability)
+        public void rebuild(Spawnlet[] items)
         {
-            this.pool[index].probability = probability;
-            this.spawnTable = buildSpawnTable(this.pool);
+            this.spawnTable = buildSpawnTable(items);
         }
 
         public GameObject Get()
@@ -135,12 +165,6 @@ public class SpawnManager : MonoBehaviour
             }
             int target = Random.Range(0, this.spawnTable.Count);
             return this.spawnTable[target];
-        }
-
-        public Randomizer(Spawnlet[] spawnlets)
-        {
-            this.pool = spawnlets;
-            this.spawnTable = buildSpawnTable(spawnlets);
         }
     }
 
@@ -163,63 +187,99 @@ public class SpawnManager : MonoBehaviour
         _gameManager = _managers.gameManager;
     }
 
-    IEnumerator TimedSpawn(Spawnable spawnable)
+    void enemyHasFirstSpawn(GameObject item, Spawnable spawnable, Transform container)
     {
-        yield return new WaitForSeconds(3f);
+        // ENEMY UNIQUE
+        Enemy enemy;
+        if (item.tag == "Enemy")
+        {
+            enemy = item.GetComponent<Enemy>();
+            enemy.getType();
+            if (_gameManager.firstSpawn(enemy.getType()))
+            {
+                specialSpawn(item, spawnable, container);
+            }
+        }
+    }
 
+    float getSpawnTime(Vector2 time)
+    {
+        Vector2 range = time;
+        float minTime = Mathf.Max(0, Mathf.Min(range[0], range[1]));
+        float maxTime = Mathf.Min(1, Mathf.Max(range[0], range[1]));
+        return Random.Range(minTime, maxTime);
+    }
+
+    Vector3 generateSpawnPosition(Spawnable spawnable)
+    {
+        BoundManager.boundingBox bbox = _boundManager.bbox();
+        float spawnableX = spawnable.useParentSpawnPosition ? _spawnPosition.x : spawnable.spawnPosition.x;
+        float spawnableY = spawnable.useParentSpawnPosition ? _spawnPosition.y : spawnable.spawnPosition.y;
+        float spawnX = spawnable.randomSpawn.x || _randomSpawn.x ? Random.Range(_bbox.xMin, _bbox.xMax) : Mathf.Clamp(spawnableX, _bbox.xMin, _bbox.xMax);
+        float spawnY = spawnable.randomSpawn.y || _randomSpawn.y ? Random.Range(_bbox.yMin, _bbox.yMax) : Mathf.Clamp(spawnableY, _bbox.yMin, _bbox.yMax);
+        return new Vector3(spawnX, spawnY, 0);
+    }
+
+    void generateContainerIfNoneAvaliable(Spawnable spawnable)
+    {
         if (spawnable.container == null)
         {
             spawnable.container = Instantiate(new GameObject("container"), transform);
         }
+    }
+
+    IEnumerator TimedSpawn(Spawnable spawnable)
+    {
+        yield return new WaitForSeconds(3f);
+        generateContainerIfNoneAvaliable(spawnable);
         while (_spawnActive)
         {
             Transform container = spawnable.container.transform;
-            Vector2 range = spawnable.timeRange;
-            int spawnCount = spawnable.spawnCount;
             bool iAmActive = spawnable.spawnActive;
-            float minTime = Mathf.Max(0, Mathf.Min(range[0], range[1]));
-            float maxTime = Mathf.Min(1, Mathf.Max(range[0], range[1]));
-            float spawnTime = Random.Range(minTime, maxTime);
+            float spawnTime = getSpawnTime(spawnable.timeRange);
 
             yield return new WaitForSeconds(spawnTime);
+            if (_gameManager.isPaused()) continue;
 
-            GameObject item = spawnQueue.Count > 1 ? spawnQueue.Dequeue() : spawnable.getObject();
-            // ENEMY UNIQUE
-            Enemy enemy;
-            if (item.tag == "Enemy")
+            GameObject item;
+            Transform parent = null;
+            if (spawnQueue.Count > 1)
             {
-                enemy = item.GetComponent<Enemy>();
-                enemy.getType();
-                if (_gameManager.firstSpawn(enemy.getType()))
-                {
-                    oldSpawnCount = spawnCount;
-                    spawnCount = 1;
-                    spawnQueue.Enqueue(item);
-                }
+                GameObjectWP special = spawnQueue.Dequeue();
+                item = special.item;
+                parent = special.parent;
             }
+            else
+            {
+                item = spawnable.getObject();
+            }
+            enemyHasFirstSpawn(item, spawnable, container);
+            int spawnCount = spawnable.spawnCount;
+
             int itemCount = container.childCount;
             bool canSpawn = spawnCount >= itemCount || spawnCount == -1;
             if (item && canSpawn && iAmActive && _spawnActive)
             {
-                BoundManager.boundingBox bbox = _boundManager.bbox();
-                float spawnableX = spawnable.useParentSpawnPosition ? _spawnPosition.x : spawnable.spawnPosition.x;
-                float spawnableY = spawnable.useParentSpawnPosition ? _spawnPosition.y : spawnable.spawnPosition.y;
-                float spawnX = spawnable.randomSpawn.x || _randomSpawn.x ? Random.Range(_bbox.xMin, _bbox.xMax) : Mathf.Clamp(spawnableX, _bbox.xMin, _bbox.xMax);
-                float spawnY = spawnable.randomSpawn.y || _randomSpawn.y ? Random.Range(_bbox.yMin, _bbox.yMax) : Mathf.Clamp(spawnableY, _bbox.yMin, _bbox.yMax);
-                Vector3 spawnPos = new Vector3(spawnX, spawnY, 0);
-                GameObject newItem = Instantiate(item, spawnPos, Quaternion.identity, container);
+                Vector3 spawnPos = generateSpawnPosition(spawnable);
+                GameObject newItem = Instantiate(item, spawnPos, Quaternion.identity, parent ? parent : container);
                 setPausible(newItem, _managers);
-                if (newItem.tag == "Enemy")
-                {
-                    newItem.GetComponent<Enemy>().managers = _managers;
-                    newItem.GetComponent<Enemy>().player = _player.transform;
-                }
+                setEnemy(newItem, _managers);
             }
+        }
+    }
+
+    void setEnemy(GameObject item, Registry manager)
+    {
+        if (item.tag == "Enemy")
+        {
+            item.GetComponent<Enemy>().managers = _managers;
+            item.GetComponent<Enemy>().player = _player.transform;
         }
     }
 
     public static void setPausible(GameObject item, Registry manager)
     {
+        if (!item) return;
         Pausible pauseControl = item.GetComponent<Pausible>();
         if (pauseControl)
         {
@@ -238,5 +298,22 @@ public class SpawnManager : MonoBehaviour
         {
             setTimer(item);
         }
+    }
+
+    public void specialSpawn(GameObject item, Spawnable spawnable, Transform parent)
+    {
+        oldSpawnCount = spawnable.spawnCount;
+        spawnable.spawnCount = 1;
+        spawnQueue.Enqueue(new GameObjectWP(item, parent));
+    }
+
+    public void restoreSpawn(GameObject item, Spawnable spawnable)
+    {
+        spawnable.spawnCount = oldSpawnCount;
+    }
+
+    public Spawnable[] getItems()
+    {
+        return items;
     }
 }

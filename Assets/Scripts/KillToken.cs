@@ -67,13 +67,16 @@ public class KillToken : MonoBehaviour
     public void toggleYellow()
     {
         _yellowBarOn = !_yellowBarOn;
+        yellowBar.SetActive(true);
     }
     public void toggleRed()
     {
         _redBarOn = !_redBarOn;
+        redBar.SetActive(true);
     }
     public void toggleGreen()
     {
         _greenBarOn = !_greenBarOn;
+        greenBar.SetActive(true);
     }
 }

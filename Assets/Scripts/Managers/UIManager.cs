@@ -24,6 +24,8 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private KillToken _killIcon;
     [SerializeField]
+    private Image _starIcon;
+    [SerializeField]
     private Text _pauseText;
     [SerializeField]
     private Transform mainCamera;
@@ -160,6 +162,12 @@ public class UIManager : MonoBehaviour
     public void greenToken(int count)
     {
         _killIcon.greenToken(count);
+    }
+
+    public void toggleStar()
+    {
+        bool status = _starIcon.gameObject.activeInHierarchy;
+        _starIcon.gameObject.SetActive(!status);
     }
 
     public void toggleYellow()

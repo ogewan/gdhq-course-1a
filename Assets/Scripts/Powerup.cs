@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Powerup : MonoBehaviour
 {
-    public enum type { ammo, repair, shield, triple, rotate, homing, glitch };
+    public enum type { ammo, repair, shield, triple, rotate, homing, glitch, star };
     [SerializeField]
     private float _speed = 0f;
     [SerializeField]

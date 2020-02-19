@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    [SerializeField]
+    private bool _immortal = false;
     public enum shotType { normal, triple, rotate, homing, glitch };
     public LaserArsenal armory;
     public GameObject shield;
@@ -86,7 +88,7 @@ public class Player : MonoBehaviour
             this.rechargeRate = 8f;
             this.drainAccumulation = 0f;
             this.overHeat = false;
-    }
+        }
     }
 
     [System.Serializable]
@@ -292,7 +294,7 @@ public class Player : MonoBehaviour
         float glitchFR = _fireRate.glitch;
 
         GameObject readyShot = gsActive ? gsPfb : hsActive ? hsPfb : (rsActive ? rsPfb : (tsActive ? tsPfb : nmPfb));
-        GameObject laser = _boundManager.bsInsantiate(readyShot, transform.position, (rsActive && !hsActive) ? rotateAim.transform.rotation : Quaternion.identity);
+        GameObject laser = _boundManager.bsInstantiate(readyShot, transform.position, (rsActive && !hsActive) ? rotateAim.transform.rotation : Quaternion.identity);
         float modifierFireRate = gsActive ? glitchFR : (hsActive ? homingFR : (rsActive ? rotateFR : (tsActive ? tripleFR : 0f)));
 
         if (laser && hsActive || gsActive)
@@ -359,6 +361,9 @@ public class Player : MonoBehaviour
                 {
                     _stats.ammo = 15;
                 }
+                break;
+            case Powerup.type.star:
+                _uIManager.toggleStar();
                 break;
             default:
                 break;
@@ -438,6 +443,7 @@ public class Player : MonoBehaviour
 
     public void Damage()
     {
+        if (_immortal) return;
         if (_stats.shield > 0)
         {
             _stats.shield--;

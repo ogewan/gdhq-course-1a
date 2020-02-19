@@ -7,12 +7,27 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 3194047900610500535}
     m_Modifications:
+    - target: {fileID: 3204879501225450186, guid: 78c86a8f145553b4e8f78f59eb1919bd,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3495168626862603337, guid: 78c86a8f145553b4e8f78f59eb1919bd,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6931559891826724008, guid: 78c86a8f145553b4e8f78f59eb1919bd,
         type: 3}
       propertyPath: m_Name
       value: Visual Enemy Rotate Shot Variant (Static)
       objectReference: {fileID: 0}
     - target: {fileID: 6931559891826724008, guid: 78c86a8f145553b4e8f78f59eb1919bd,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6974249283785425228, guid: 78c86a8f145553b4e8f78f59eb1919bd,
         type: 3}
       propertyPath: m_IsActive
       value: 0

@@ -10,6 +10,16 @@ public class MainMenu : MonoBehaviour
     private GameManager _newManager;
     public GameObject endlessButton;
 
+    private void Awake()
+    {
+        GameManager oldManager = registerManager<GameManager>("old");
+        if (oldManager)
+        {
+            endlessButton.SetActive(oldManager.isEndlessModeUnlocked());
+            Destroy(oldManager.gameObject);
+        }
+    }
+
     public void easyGame()
     {
         _mode = GameManager.mode.easy;
@@ -28,20 +38,15 @@ public class MainMenu : MonoBehaviour
         loadGame();
     }
 
+    public GameManager.mode getMode()
+    {
+        return _mode;
+    }
+
     public void loadGame()
     {
         DontDestroyOnLoad(gameObject);
         SceneManager.LoadScene(1); //main game scene
-    }
-
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        _newManager = registerManager<GameManager>("GameManager");
-        if (gameObject.name == "old" && _newManager)
-        {
-            _newManager.setMode(_mode);
-            Destroy(gameObject);
-        }
     }
 
     T registerManager<T>(string name)

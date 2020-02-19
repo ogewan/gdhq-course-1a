@@ -7,23 +7,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 2104947432, guid: 20a45b43ae2b8e94dad036bbfdcc309f, type: 3}
-      propertyPath: target
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 2104947432, guid: 20a45b43ae2b8e94dad036bbfdcc309f, type: 3}
-      propertyPath: acceleration
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2104947432, guid: 20a45b43ae2b8e94dad036bbfdcc309f, type: 3}
-      propertyPath: glitched
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4330227549641586747, guid: 20a45b43ae2b8e94dad036bbfdcc309f,
-        type: 3}
-      propertyPath: speed
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 8395307987511993146, guid: 20a45b43ae2b8e94dad036bbfdcc309f,
         type: 3}
       propertyPath: m_LocalPosition.x

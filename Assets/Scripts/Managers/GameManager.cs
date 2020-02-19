@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
 {
     public enum mode { easy, hard, endless };
     public Registry _managers;
+    public int scoreMult = 1;
     [SerializeField]
     private bool _gameOver = false;
     [SerializeField]
@@ -19,24 +20,38 @@ public class GameManager : MonoBehaviour
     private int _highScore;
     private mode _mode;
     private UIManager _uIManager;
-    private GameManager _newManager;
     private StoryManager _storyManager;
+    private SpawnManager _spawnManager;
     private MainMenu _mainMenu;
 
-    void OnEnable()
+    void Awake()
     {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
+        _uIManager = _managers.uiManager;
+        _storyManager = _managers.storyManager;
+        _spawnManager = _managers.spawnManager;
 
-    void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        GameManager oldManager = registerManager<GameManager>("old");
+        if (oldManager)
+        {
+            setHighScore(oldManager.getHighScore());
+            setMode(oldManager.getMode());
+            if (oldManager.isEndlessModeUnlocked()) unlockEndlessMode();
+            Destroy(oldManager.gameObject);
+        }
+        MainMenu mainMenu = registerManager<MainMenu>("Canvas");
+        if (mainMenu)
+        {
+            setMode(mainMenu.getMode());
+            Destroy(mainMenu.gameObject);
+        }
     }
 
     void Start()
     {
-        _uIManager = _managers.uiManager;
-        _storyManager = _managers.storyManager;
+        if (_mode == mode.easy)
+        {
+            scoreMult = 3;
+        }
     }
 
     void Update()
@@ -50,23 +65,6 @@ public class GameManager : MonoBehaviour
         if (_score > _highScore)
         {
             setHighScore(_score);
-        }
-    }
-
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        _newManager = registerManager<GameManager>("GameManager");
-        _mainMenu = registerManager<MainMenu>("Canvas");
-        if (gameObject.name == "old" && _newManager)
-        {
-            _newManager.setHighScore(_highScore);
-            _newManager.setMode(_mode);
-            //Destroy(gameObject);
-        }
-        if (_mainMenu && _unlockedEndless)
-        {
-            _mainMenu.endlessButton.SetActive(true);
-            Destroy(gameObject);
         }
     }
 
@@ -118,8 +116,9 @@ public class GameManager : MonoBehaviour
 
     public void addScore(int score)
     {
-        _score += score;
+        _score += score * scoreMult;
         _uIManager.updateScore(_score);
+        _storyManager.scoreCheck(_score);
     }
 
     public void addKill(Enemy.type type, int kill=1)
@@ -136,6 +135,7 @@ public class GameManager : MonoBehaviour
                 _uIManager.greenToken(kill);
                 break;
         }
+        _storyManager.addKill(type);
     }
 
     public void setHighScore(int score)
@@ -144,13 +144,40 @@ public class GameManager : MonoBehaviour
         _uIManager.updateHighScore(_highScore);
     }
 
+    public int getHighScore()
+    {
+        return _highScore;
+    }
+
+    public mode getMode()
+    {
+        return _mode;
+    }
+
     public void setMode(mode gameMode)
     {
         _mode = gameMode;
     }
 
+    public bool isEndlessModeUnlocked()
+    {
+        return _unlockedEndless;
+    }
+
     public bool firstSpawn(Enemy.type type)
     {
+        switch(type)
+        {
+            case Enemy.type.Super:
+                _uIManager.toggleYellow();
+                break;
+            case Enemy.type.Hyper:
+                _uIManager.toggleRed();
+                break;
+            case Enemy.type.Ultra:
+                _uIManager.toggleGreen();
+                break;
+        }
         return _storyManager.firstSpawn(type);
     }
 

@@ -9,6 +9,8 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     private type enemyType;
     [SerializeField]
+    private Transform _rotateAim;
+    [SerializeField]
     private int _health = 1;
     public LaserArsenal armory;
     public AudioClip laserFire;
@@ -28,6 +30,8 @@ public class Enemy : MonoBehaviour
     private AudioSource _audioPlayer;
     [SerializeField]
     private Collider2D _selfCollider;
+    [SerializeField]
+    private SpriteRenderer _sprite;
     [SerializeField]
     private float _scaler = 1f;
     public Registry managers;
@@ -49,6 +53,7 @@ public class Enemy : MonoBehaviour
         //_selfCollider = GetComponent<Collider2D>();
         _audioPlayer.clip = laserFire;
         StartCoroutine(fireRoutine());
+        _sprite = GetComponent<SpriteRenderer>();
     }
 
     void Update()
@@ -98,9 +103,14 @@ public class Enemy : MonoBehaviour
         _destroyed = true;
         _gameManager.addScore(_scoreValue);
         _gameManager.addKill(enemyType);
-        if (enemyType == type.Tohou)
+        switch (enemyType)
         {
-            _gameManager.unlockEndlessMode();
+            case Enemy.type.Tohou:
+                _gameManager.unlockEndlessMode();
+                break;
+            case Enemy.type.Ultra:
+                _sprite.color = Color.white;
+                break;
         }
         _animator.SetTrigger("onEnemyDeath");
         transform.localScale = transform.localScale * _scaler;
@@ -118,10 +128,10 @@ public class Enemy : MonoBehaviour
     void EnemySetup()
     {
         SpawnManager.Spawnlet[] pool;
-        SpawnManager.Spawnlet normal = new SpawnManager.Spawnlet(armory.normalPrefab);
-        SpawnManager.Spawnlet rotate = new SpawnManager.Spawnlet(armory.rotateShotPrefab);
-        SpawnManager.Spawnlet homing = new SpawnManager.Spawnlet(armory.homingShotPrefab, 50);
-        SpawnManager.Spawnlet super = new SpawnManager.Spawnlet(armory.superShotPrefab);
+        SpawnManager.Spawnlet normal = new SpawnManager.Spawnlet(armory.normalPrefab, 3);
+        SpawnManager.Spawnlet rotate = new SpawnManager.Spawnlet(armory.rotateShotPrefab, 3);
+        SpawnManager.Spawnlet homing = new SpawnManager.Spawnlet(armory.homingShotPrefab, 3);
+        SpawnManager.Spawnlet super = new SpawnManager.Spawnlet(armory.superShotPrefab, 3);
         SpawnManager.Spawnlet portal = new SpawnManager.Spawnlet(armory.glitchShotPrefab);
 
         switch (enemyType)
@@ -137,17 +147,17 @@ public class Enemy : MonoBehaviour
                 break;
             case type.Hyper:
                 _scaler = 3f;
-                pool = new SpawnManager.Spawnlet[4] { normal, rotate, homing, portal };
+                pool = new SpawnManager.Spawnlet[3] { rotate, homing, portal };
                 _projectile = new SpawnManager.Randomizer(pool);
                 break;
             case type.Ultra:
-                _scaler = 6f;
+                _scaler = 5f;
                 pool = new SpawnManager.Spawnlet[4] { super, rotate, homing, portal };
                 _projectile = new SpawnManager.Randomizer(pool);
                 break;
             case type.Tohou:
-                _scaler = 12f;
-                pool = new SpawnManager.Spawnlet[5] { normal, super, rotate, homing, portal };
+                _scaler = 6f;
+                pool = new SpawnManager.Spawnlet[4] { normal, super, rotate, homing };
                 _projectile = new SpawnManager.Randomizer(pool);
                 break;
         }
@@ -162,6 +172,15 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    void rotateLaser(GameObject laser)
+    {
+        HomingLaser laserCPU = laser.GetComponent<HomingLaser>();
+        if (laserCPU != null)
+        {
+            laserCPU.setTarget(player);
+        }
+    }
+    
     IEnumerator fireRoutine()
     {
         while (!_destroyed)
@@ -170,11 +189,13 @@ public class Enemy : MonoBehaviour
             float maxTime = Mathf.Max(1, Mathf.Max(fireTimeRange[0], fireTimeRange[1]));
             float spawnTime = Random.Range(minTime, maxTime);
             yield return new WaitForSeconds(spawnTime);
-            if (!_destroyed)
+            bool isPaused = _pausible && _pausible.isPaused();
+            if (!_destroyed && !isPaused)
             {
                 GameObject laser = _projectile.Get();
                 chooseTarget(laser);
-                _boundManager.bsInsantiate(laser, transform.position, transform.rotation);
+                rotateLaser(laser);
+                _boundManager.bsInstantiate(laser, transform.position, (armory.rotateShotPrefab.name == laser.name) ? _rotateAim.rotation : transform.rotation);
                 _audioPlayer.Play();
             }
         }
