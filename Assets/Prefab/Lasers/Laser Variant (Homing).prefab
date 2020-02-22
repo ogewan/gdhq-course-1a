@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   acceleration: 4
-  spinSpeed: 5
+  spinSpeed: 27
   glitched: 0
 --- !u!1001 &2594279106516462249
 PrefabInstance:

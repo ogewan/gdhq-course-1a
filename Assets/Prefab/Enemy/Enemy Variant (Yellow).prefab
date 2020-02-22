@@ -94,6 +94,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 78c86a8f145553b4e8f78f59eb1919bd, type: 3}
+--- !u!4 &8103629305028870854 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8103629305743018713, guid: 78c86a8f145553b4e8f78f59eb1919bd,
+    type: 3}
+  m_PrefabInstance: {fileID: 905119775}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7617378275323359647
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -141,6 +147,11 @@ PrefabInstance:
       propertyPath: _scoreValue
       value: 100
       objectReference: {fileID: 0}
+    - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
+        type: 3}
+      propertyPath: _rotateAim
+      value: 
+      objectReference: {fileID: 8103629305028870854}
     - target: {fileID: 5312369513148128656, guid: c801279204fd3ce4f8f97be3ff202b54,
         type: 3}
       propertyPath: m_LocalPosition.x

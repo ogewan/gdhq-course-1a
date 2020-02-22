@@ -69,17 +69,17 @@ public class BoundManager : MonoBehaviour
 
     bool outXBound(float xPos)
     {
-        return xPos <= _bbox.xMin || xPos >= _bbox.xMax;
+        return xPos < _bbox.xMin || xPos > _bbox.xMax;
     }
 
     bool outYBound(float yPos)
     {
-        return yPos <= _bbox.yMin || yPos >= _bbox.yMax;
+        return yPos < _bbox.yMin || yPos > _bbox.yMax;
     }
 
     bool oob(Vector3 pos)
     {
-        //Debug.Log("BoolTest " + (outXBound(pos.x) || outXBound(pos.y)) + " oobxBOOL " + outXBound(pos.x) + " oobyBOOL " + outXBound(pos.y));
+        //Debug.Log("X: " + pos.x + " " + outXBound(pos.x) + " Y: " + pos.y + " " + outXBound(pos.y));
         return (outXBound(pos.x) || outYBound(pos.y));
     }
 
@@ -125,6 +125,7 @@ public class BoundManager : MonoBehaviour
         {
             float spawnNewYPos = Random.Range(_bbox.yMin, _bbox.yMax);
             item.transform.position = new Vector3(xPos <= _bbox.xMin ? _bbox.xMax : _bbox.xMin, spawnNewYPos, 0);
+            return;
         }
 
 
@@ -132,6 +133,7 @@ public class BoundManager : MonoBehaviour
         {
             float spawnNewXPos = Random.Range(_bbox.xMin, _bbox.xMax);
             item.transform.position = new Vector3(spawnNewXPos, yPos <= _bbox.yMin ? _bbox.yMax : _bbox.yMin, 0);
+            return;
         }
     }
 

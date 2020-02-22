@@ -467,4 +467,9 @@ public class Player : MonoBehaviour
         _powerUpTimer = powerUpRoutine(type);
         StartCoroutine(_powerUpTimer);
     }
+
+    public void toggleGodMode()
+    {
+        _immortal = !_immortal;
+    }
 }

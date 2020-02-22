@@ -95,7 +95,7 @@ PrefabInstance:
         type: 3}
       propertyPath: glitchShotPrefab
       value: 
-      objectReference: {fileID: 7318180432945461968, guid: 0486f2ee4936c404ea7596d8bf162eb3,
+      objectReference: {fileID: 5579497295111254312, guid: 0486f2ee4936c404ea7596d8bf162eb3,
         type: 3}
     - target: {fileID: 7100787354409092079, guid: 84e9ae00a9178d0499c6f22428181765,
         type: 3}

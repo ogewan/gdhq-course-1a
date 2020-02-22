@@ -4,12 +4,26 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public enum type { Normal, Super, Hyper, Ultra, Tohou };
+    public enum type { Normal, Super, Hyper, Ultra, Tohou, Tohou_gun };
 
     [SerializeField]
     private type enemyType;
     [SerializeField]
     private Transform _rotateAim;
+    [SerializeField]
+    private float _portalOffset = 4f;
+    [SerializeField]
+    private int _portalLimit = 30;
+    [SerializeField]
+    private GameObject _portalContainer;
+    [SerializeField]
+    private GameObject[] _gunners = new GameObject[3];
+    [SerializeField]
+    private float _regenerateTime = 4f;
+    [SerializeField]
+    private bool _activated = true;
+    [SerializeField]
+    private GameObject _indicator;
     [SerializeField]
     private int _health = 1;
     public LaserArsenal armory;
@@ -56,6 +70,20 @@ public class Enemy : MonoBehaviour
         _sprite = GetComponent<SpriteRenderer>();
     }
 
+
+    void setGunners()
+    {
+        foreach (GameObject gun in _gunners)
+        {
+            SpawnManager.setPausible(gun, managers);
+            gun.GetComponent<Enemy>().managers = managers;
+            gun.GetComponent<Enemy>().player = player.transform;
+            gun.GetComponent<Enemy>().setPortalContainer(_portalContainer);
+            gun.SetActive(true);
+        }
+    }
+
+
     void Update()
     {
         if (_pausible && _pausible.isPaused()) return;
@@ -66,7 +94,9 @@ public class Enemy : MonoBehaviour
     {
         bool hitPlayer = other.tag == "Player";
         bool hitLaser = other.tag == "Laser";
-        
+        bool hitPortal = other.tag == "Portal";
+        bool isTohouGun = enemyType == type.Tohou_gun;
+
         if (hitPlayer || hitLaser)
         {
             if (hitPlayer)
@@ -83,6 +113,15 @@ public class Enemy : MonoBehaviour
             }
             Damage();
         }
+
+        if (hitPortal && !isTohouGun)
+        {
+            int sign = randomSign();
+            float rotater = (transform.eulerAngles.z == 0) ? 90 * sign : transform.eulerAngles.z * -1;
+            //Debug.Log(transform.eulerAngles.z == 0);
+            transform.Rotate(Vector3.forward, rotater);
+            other.gameObject.GetComponent<Portal>().closePortal();
+        }
     }
 
     void Damage()
@@ -90,7 +129,16 @@ public class Enemy : MonoBehaviour
         _health--;
         if (_health <= 0 && !_destroyed)
         {
-            EnemyDies();
+            if (enemyType == type.Tohou_gun)
+            {
+                StartCoroutine(regenerate());
+                _indicator.SetActive(false);
+                _activated = false;
+            }
+            else
+            {
+                EnemyDies();
+            }
         }
     }
 
@@ -133,6 +181,7 @@ public class Enemy : MonoBehaviour
         SpawnManager.Spawnlet homing = new SpawnManager.Spawnlet(armory.homingShotPrefab, 3);
         SpawnManager.Spawnlet super = new SpawnManager.Spawnlet(armory.superShotPrefab, 3);
         SpawnManager.Spawnlet portal = new SpawnManager.Spawnlet(armory.glitchShotPrefab);
+        SpawnManager.Spawnlet specialPortal = new SpawnManager.Spawnlet(armory.glitchShotPrefab, 2);
 
         switch (enemyType)
         {
@@ -152,11 +201,16 @@ public class Enemy : MonoBehaviour
                 break;
             case type.Ultra:
                 _scaler = 5f;
-                pool = new SpawnManager.Spawnlet[4] { super, rotate, homing, portal };
+                pool = new SpawnManager.Spawnlet[4] { super, rotate, homing, specialPortal };
                 _projectile = new SpawnManager.Randomizer(pool);
                 break;
             case type.Tohou:
                 _scaler = 6f;
+                pool = new SpawnManager.Spawnlet[1] { portal };
+                _projectile = new SpawnManager.Randomizer(pool);
+                setGunners();
+                break;
+            case type.Tohou_gun:
                 pool = new SpawnManager.Spawnlet[4] { normal, super, rotate, homing };
                 _projectile = new SpawnManager.Randomizer(pool);
                 break;
@@ -164,15 +218,6 @@ public class Enemy : MonoBehaviour
     }
 
     void chooseTarget(GameObject laser)
-    {
-        HomingLaser laserCPU = laser.GetComponent<HomingLaser>();
-        if (laserCPU != null)
-        {
-            laserCPU.setTarget(player);
-        }
-    }
-
-    void rotateLaser(GameObject laser)
     {
         HomingLaser laserCPU = laser.GetComponent<HomingLaser>();
         if (laserCPU != null)
@@ -190,15 +235,40 @@ public class Enemy : MonoBehaviour
             float spawnTime = Random.Range(minTime, maxTime);
             yield return new WaitForSeconds(spawnTime);
             bool isPaused = _pausible && _pausible.isPaused();
-            if (!_destroyed && !isPaused)
+            if (!_destroyed && !isPaused && _activated)
             {
                 GameObject laser = _projectile.Get();
                 chooseTarget(laser);
-                rotateLaser(laser);
-                _boundManager.bsInstantiate(laser, transform.position, (armory.rotateShotPrefab.name == laser.name) ? _rotateAim.rotation : transform.rotation);
+                //Vector3 offsetPosition = new Vector3(transform.position.x, transform.position.y - _portalOffset);
+                bool isRotateShot = armory.rotateShotPrefab.name == laser.name;
+                bool isPortal = armory.glitchShotPrefab.name == laser.name;
+                Quaternion projectileRotation = (isRotateShot) ? _rotateAim.rotation : transform.rotation;
+                //Vector3 projectilePosition = (isPortal) ? offsetPosition : transform.position;
+                if (isPortal) {
+                    if (_portalContainer.transform.childCount > _portalLimit) continue;
+                }
+                GameObject firedProjectile = _boundManager.bsInstantiate(laser, transform.position, projectileRotation);
+                if (isPortal && firedProjectile)
+                {
+                    Vector3 eangles = firedProjectile.transform.eulerAngles;
+                    firedProjectile.transform.Translate(Vector3.down * _portalOffset);
+                    firedProjectile.transform.eulerAngles = new Vector3(eangles.x, eangles.y, eangles.z + 90);
+                    firedProjectile.transform.parent = _portalContainer.transform;
+
+                }
+                //Debug.Break();
                 _audioPlayer.Play();
             }
         }
+    }
+
+    IEnumerator regenerate()
+    {
+        yield return new WaitForSeconds(_regenerateTime);
+        _health++;
+        _indicator.SetActive(true);
+        _activated = true;
+
     }
 
     T registerComponent<T>(string name)
@@ -215,5 +285,15 @@ public class Enemy : MonoBehaviour
     public type getType()
     {
         return enemyType;
+    }
+
+    public int randomSign()
+    {
+        return Random.Range(0, 2) == 0 ? -1 : 1;
+    }
+
+    public void setPortalContainer(GameObject item)
+    {
+        _portalContainer = item;
     }
 }

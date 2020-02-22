@@ -9,6 +9,8 @@ public class SpawnManager : MonoBehaviour
     [SerializeField]
     private Registry _managers;
     [SerializeField]
+    private GameObject _portalContainer;
+    [SerializeField]
     private Transform _player;
     [SerializeField]
     private Spawnable[] items;
@@ -58,6 +60,7 @@ public class SpawnManager : MonoBehaviour
         public GameObject container;
         public Vector2 timeRange;
         public int spawnCount;
+        public int oldSpawnCount;
         public bool useParentSpawnPosition;
         public Vector2 spawnPosition;
         public Vector3Bool randomSpawn;
@@ -71,6 +74,7 @@ public class SpawnManager : MonoBehaviour
             this.pool = _pool;
             this.container = _container;
             this.spawnCount = -1;
+            this.oldSpawnCount = 0;
             this.useParentSpawnPosition = true;
             this.spawnPosition = Vector3.zero;
             this.randomSpawn = new Vector3Bool(false, false, false);
@@ -110,6 +114,17 @@ public class SpawnManager : MonoBehaviour
             {
                 this.item = new Randomizer(pool);
             }
+        }
+
+        public void freezeSpawn()
+        {
+            oldSpawnCount = spawnCount;
+            spawnCount = 0;
+        }
+
+        public void restoreSpawn()
+        {
+            spawnCount = oldSpawnCount;
         }
     }
 
@@ -258,6 +273,7 @@ public class SpawnManager : MonoBehaviour
 
             int itemCount = container.childCount;
             bool canSpawn = spawnCount >= itemCount || spawnCount == -1;
+            //Debug.Log("SpawnCount: " + spawnCount);
             if (item && canSpawn && iAmActive && _spawnActive)
             {
                 Vector3 spawnPos = generateSpawnPosition(spawnable);
@@ -274,6 +290,7 @@ public class SpawnManager : MonoBehaviour
         {
             item.GetComponent<Enemy>().managers = _managers;
             item.GetComponent<Enemy>().player = _player.transform;
+            item.GetComponent<Enemy>().setPortalContainer(_portalContainer);
         }
     }
 
@@ -305,11 +322,6 @@ public class SpawnManager : MonoBehaviour
         oldSpawnCount = spawnable.spawnCount;
         spawnable.spawnCount = 1;
         spawnQueue.Enqueue(new GameObjectWP(item, parent));
-    }
-
-    public void restoreSpawn(GameObject item, Spawnable spawnable)
-    {
-        spawnable.spawnCount = oldSpawnCount;
     }
 
     public Spawnable[] getItems()

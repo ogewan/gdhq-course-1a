@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public enum mode { easy, hard, endless };
+    public enum mode { easy, hard, endless, debug };
     public Registry _managers;
     public int scoreMult = 1;
     [SerializeField]
@@ -51,6 +51,13 @@ public class GameManager : MonoBehaviour
         if (_mode == mode.easy)
         {
             scoreMult = 3;
+        }
+
+        if (_mode == mode.debug)
+        {
+            GameObject item = GameObject.Find("Player");
+            Player player = item.GetComponent<Player>();
+            player.toggleGodMode();
         }
     }
 

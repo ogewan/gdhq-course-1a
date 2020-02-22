@@ -102,6 +102,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyType: 0
+  _rotateAim: {fileID: 0}
+  _portalOffset: 3
+  _portalLimit: 30
+  _portalContainer: {fileID: 0}
   _health: 1
   armory: {fileID: 5785800567083993149, guid: c5a080ec07de75947a7bdd0d61df0f3e, type: 3}
   laserFire: {fileID: 8300000, guid: 75676f361bdfeaf41a46623e95df3dbc, type: 3}
@@ -114,6 +118,7 @@ MonoBehaviour:
   _animator: {fileID: 3104084390791979401}
   _audioPlayer: {fileID: 7477116901751347175}
   _selfCollider: {fileID: 3105963300327838464}
+  _sprite: {fileID: 0}
   _scaler: 1
   managers: {fileID: 0}
 --- !u!50 &5245035945381954877
@@ -290,7 +295,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b44ccbf155207f4da7808867717ddda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gameManager: {fileID: 0}
+  gameManager: {fileID: 0}
 --- !u!1001 &88498316692253532
 PrefabInstance:
   m_ObjectHideFlags: 0

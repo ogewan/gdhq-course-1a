@@ -38,6 +38,12 @@ public class MainMenu : MonoBehaviour
         loadGame();
     }
 
+    public void debugMode()
+    {
+        _mode = GameManager.mode.debug;
+        loadGame();
+    }
+
     public GameManager.mode getMode()
     {
         return _mode;

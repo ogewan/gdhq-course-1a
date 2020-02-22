@@ -13,6 +13,8 @@ public class StoryManager : MonoBehaviour
     public GameObject ultraEnemy;
     public GameObject tohouEnemy;
     public GameObject starCollectible;
+    public int enemySpawnableIndex = 0;
+    public GameObject _portalContainer;
 
     private SpawnManager _spawnManager;
     private BoundManager _boundManager;
@@ -105,6 +107,7 @@ public class StoryManager : MonoBehaviour
     {
         Dictionary<Enemy.type, int> killed = _enemyTriggers.killed;
         SpawnManager.Spawnable[] items = _spawnManager.getItems();
+        _spawnManager.getItems()[enemySpawnableIndex].freezeSpawn();
 
         if (!killed.ContainsKey(type))
         {
@@ -133,8 +136,11 @@ public class StoryManager : MonoBehaviour
                     tohou.GetComponent<Enemy>().managers = managers;
                     tohou.GetComponent<Enemy>().player = _playerPosition;
                     tohou.transform.parent = _enemyContainer;
+                    tohou.GetComponent<Enemy>().setPortalContainer(_portalContainer);
+                    _spawnManager.getItems()[enemySpawnableIndex].freezeSpawn();
                     break;
                 case 5:
+                    _spawnManager.getItems()[enemySpawnableIndex].restoreSpawn();
                     //Spawn star
                     GameObject star =_boundManager.bsInstantiate(starCollectible, new Vector3(0, 6), Quaternion.identity);
                     star.transform.parent = _powerupContainer;
