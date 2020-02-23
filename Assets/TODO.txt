@@ -1,2 +1,5 @@
 ﻿#Change spawnManager substructs into subclasses
 #Add more comments and reorganize classes
+#specifically, break monoclasses down
+#find optimal script ordering
+#bug: all ienumerator times continue during pausse

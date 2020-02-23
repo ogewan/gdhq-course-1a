@@ -1,20 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &8364431469528321048
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3392568967771300536}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4db37f15f04d6874aa5ff125b6c39c3c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
-  acceleration: 4
-  glitched: 1
 --- !u!114 &5259547335379611578
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   acceleration: 4
+  spinSpeed: 5
   glitched: 0
 --- !u!114 &1028510897759360151
 MonoBehaviour:
@@ -44,7 +30,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   acceleration: 4
+  spinSpeed: 5
   glitched: 0
+--- !u!114 &8364431469528321048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3392568967771300536}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4db37f15f04d6874aa5ff125b6c39c3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  acceleration: 4
+  spinSpeed: 5
+  glitched: 1
 --- !u!1001 &1572783573383720495
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -351,6 +354,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Laser Variant (Glitch)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6546620628309822718, guid: 6c50e81757d4e8944a262ec6302d1004,
+        type: 3}
+      propertyPath: m_TagString
+      value: Glitch
       objectReference: {fileID: 0}
     - target: {fileID: 6878065157858213373, guid: 6c50e81757d4e8944a262ec6302d1004,
         type: 3}

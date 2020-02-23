@@ -91,10 +91,11 @@ public class Enemy : MonoBehaviour
     {
         bool hitPlayer = other.tag == "Player";
         bool hitLaser = other.tag == "Laser";
+        bool hitGlitch = other.tag == "Glitch";
         bool hitPortal = other.tag == "Portal";
         bool isTohouGun = enemyType == type.Tohou_gun;
 
-        if (hitPlayer || hitLaser)
+        if (hitPlayer || hitLaser || hitGlitch)
         {
             if (hitPlayer)
             {

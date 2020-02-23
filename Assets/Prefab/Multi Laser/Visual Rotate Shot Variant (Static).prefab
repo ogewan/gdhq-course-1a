@@ -93,7 +93,7 @@ PrefabInstance:
     - target: {fileID: 6366600412197181616, guid: 5bde7862e3505f2469603e7bb05632a8,
         type: 3}
       propertyPath: m_Name
-      value: Rotate Shot
+      value: Visual Rotate Shot Variant (Static)
       objectReference: {fileID: 0}
     - target: {fileID: 6526119131381523612, guid: 5bde7862e3505f2469603e7bb05632a8,
         type: 3}
@@ -112,6 +112,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 6173990481925846229, guid: 5bde7862e3505f2469603e7bb05632a8, type: 3}
+    - {fileID: 4700099648650013135, guid: 5bde7862e3505f2469603e7bb05632a8, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 5bde7862e3505f2469603e7bb05632a8, type: 3}
 --- !u!1 &7396054489955475494 stripped
 GameObject:

@@ -33,6 +33,7 @@ public class BoundManager : MonoBehaviour
         Vector3 _min = boundingbox.bounds.min;
         Vector3 _max = boundingbox.bounds.max;
         _bbox = new boundingBox(_min, _max);
+        //Debug.Log("BM min " + _min + " max " + _max);
     }
 
     void OnTriggerExit2D(Collider2D other)
@@ -158,6 +159,7 @@ public class BoundManager : MonoBehaviour
 
     public boundingBox bbox()
     {
+        //Debug.Log("BBOX min " + new Vector2(_bbox.xMin, _bbox.xMax) + " max " + new Vector2(_bbox.yMin, _bbox.yMax));
         return _bbox;
     }
 }

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6177752128824790420}
   - component: {fileID: -6150217531288645217}
+  - component: {fileID: -5956017049832372364}
   m_Layer: 0
   m_Name: Enemy Lasers
   m_TagString: Untagged
@@ -45,6 +46,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce67edbf22acd4842bb2ca409556e44e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lasers:
+  - {fileID: 1592070389316912209}
+  - {fileID: 3469948997310677283}
+  - {fileID: 0}
+--- !u!114 &-5956017049832372364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4242802954381892226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b44ccbf155207f4da7808867717ddda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameManager: {fileID: 0}
 --- !u!1001 &1858493004514449946
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -129,6 +147,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: da0b43d7fc86a0142889999458b87734, type: 3}
+--- !u!1 &1592070389316912209 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1140143113797819979, guid: da0b43d7fc86a0142889999458b87734,
+    type: 3}
+  m_PrefabInstance: {fileID: 1858493004514449946}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2035895774361321788 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 399208353825774374, guid: da0b43d7fc86a0142889999458b87734,
@@ -219,6 +243,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: da0b43d7fc86a0142889999458b87734, type: 3}
+--- !u!1 &3469948997310677283 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1140143113797819979, guid: da0b43d7fc86a0142889999458b87734,
+    type: 3}
+  m_PrefabInstance: {fileID: 4608631736025997160}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4215197472110969934 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 399208353825774374, guid: da0b43d7fc86a0142889999458b87734,

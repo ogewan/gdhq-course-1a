@@ -6,18 +6,18 @@ public class Pausible : MonoBehaviour
 {
     public GameManager gameManager;
 
-    void Awake()
+    void start()
     {
         if (!gameManager)
         {
-            Debug.LogWarning("GameManager for Pausible component is not set. Using slower Find method. Fix this before production.");
-            gameManager = registerManager<GameManager>("GameManager");
+            //Debug.LogWarning("GameManager for Pausible component is not set. Using slower Find method. Fix this before production.");
+            //gameManager = registerManager<GameManager>("GameManager");
         }
     }
 
     public bool isPaused()
     {
-        return gameManager.isPaused();
+        return !gameManager ? false : gameManager.isPaused();
     }
 
     T registerManager<T>(string name)

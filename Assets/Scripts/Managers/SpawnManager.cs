@@ -198,6 +198,7 @@ public class SpawnManager : MonoBehaviour
     void Start()
     {
         _boundManager = _managers.boundManager;
+        //Debug.Log("SM min " + new Vector2(_boundManager.bbox().xMin, _boundManager.bbox().xMax) + " max " + new Vector2(_boundManager.bbox().yMin, _boundManager.bbox().yMax));
         _bbox = _boundManager.bbox();
         _gameManager = _managers.gameManager;
     }
@@ -232,6 +233,7 @@ public class SpawnManager : MonoBehaviour
         float spawnableY = spawnable.useParentSpawnPosition ? _spawnPosition.y : spawnable.spawnPosition.y;
         float spawnX = spawnable.randomSpawn.x || _randomSpawn.x ? Random.Range(_bbox.xMin, _bbox.xMax) : Mathf.Clamp(spawnableX, _bbox.xMin, _bbox.xMax);
         float spawnY = spawnable.randomSpawn.y || _randomSpawn.y ? Random.Range(_bbox.yMin, _bbox.yMax) : Mathf.Clamp(spawnableY, _bbox.yMin, _bbox.yMax);
+        //Debug.Log("Random " + new Vector2(spawnX, spawnY) + " X " + new Vector2(_bbox.xMin, _bbox.xMax) + " Y " + new Vector2(_bbox.yMin, _bbox.yMax));
         return new Vector3(spawnX, spawnY, 0);
     }
 
@@ -272,13 +274,14 @@ public class SpawnManager : MonoBehaviour
             int spawnCount = spawnable.spawnCount;
 
             int itemCount = container.childCount;
-            bool canSpawn = spawnCount >= itemCount || spawnCount == -1;
+            bool canSpawn = spawnCount >= itemCount || spawnCount == -1 || _gameManager.isEndlessModeUnlocked();
             if (item && canSpawn && iAmActive && _spawnActive)
             {
                 Vector3 spawnPos = generateSpawnPosition(spawnable);
+                setPausible(item, _managers);
+                setEnemy(item, _managers);
                 GameObject newItem = Instantiate(item, spawnPos, Quaternion.identity, parent ? parent : container);
-                setPausible(newItem, _managers);
-                setEnemy(newItem, _managers);
+                //Debug.Log(newItem.transform + " " + newItem.transform.position);
             }
         }
     }
@@ -300,6 +303,16 @@ public class SpawnManager : MonoBehaviour
         if (pauseControl)
         {
             pauseControl.gameManager = manager.gameManager;
+        }
+    }
+
+    public static void setPausible(GameObject item, GameManager gManager)
+    {
+        if (!item) return;
+        Pausible pauseControl = item.GetComponent<Pausible>();
+        if (pauseControl)
+        {
+            pauseControl.gameManager = gManager;
         }
     }
 

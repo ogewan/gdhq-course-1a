@@ -62,7 +62,6 @@ public class MainMenu : MonoBehaviour
         {
             return manager.GetComponent<T>();
         }
-        Debug.LogError(name + " not found");
         return default(T);
     }
 }
