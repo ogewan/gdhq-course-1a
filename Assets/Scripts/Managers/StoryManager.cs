@@ -144,7 +144,6 @@ public class StoryManager : MonoBehaviour
                     //Spawn star
                     GameObject star =_boundManager.bsInstantiate(starCollectible, new Vector3(0, 6), Quaternion.identity);
                     star.transform.parent = _powerupContainer;
-                    //Debug.Break();
                     break;
             }
         }

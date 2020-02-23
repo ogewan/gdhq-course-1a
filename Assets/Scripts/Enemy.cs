@@ -265,17 +265,6 @@ public class Enemy : MonoBehaviour
 
     }
 
-    T registerComponent<T>(string name)
-    {
-        GameObject manager = GameObject.Find(name);
-        if (manager)
-        {
-            return manager.GetComponent<T>();
-        }
-        Debug.LogError(name + " not found");
-        return default(T);
-    }
-
     public type getType()
     {
         return enemyType;
