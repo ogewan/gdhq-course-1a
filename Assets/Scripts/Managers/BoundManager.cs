@@ -58,10 +58,6 @@ public class BoundManager : MonoBehaviour
             case "TEST":
                 break;
             default:
-                //Debug.Log(other.tag);
-                //Debug.Log("OUT OF BOUDNDS");
-                //Debug.Break();
-                //Debug.Log(other.gameObject);
                 Destroy(other.gameObject);
                 break;
         }
@@ -79,7 +75,6 @@ public class BoundManager : MonoBehaviour
 
     bool oob(Vector3 pos)
     {
-        //Debug.Log("X: " + pos.x + " " + outXBound(pos.x) + " Y: " + pos.y + " " + outXBound(pos.y));
         return (outXBound(pos.x) || outYBound(pos.y));
     }
 
@@ -95,7 +90,6 @@ public class BoundManager : MonoBehaviour
             Transform[] allTransforms = original.GetComponentsInChildren<Transform>();
             foreach (Transform child in allTransforms)
             {
-                //Debug.Log("Position " + child.transform.position + " oob " + oob(child.transform.position) + " oobY " + outYBound(child.transform.position.y) + " oobX " + outXBound(child.transform.position.x));
                 if (oob(child.position))
                 {
                     Destroy(child.gameObject);
@@ -157,8 +151,6 @@ public class BoundManager : MonoBehaviour
 
     public GameObject bsInstantiate(Object original, Vector3 position, Quaternion rotation)
     {
-        //Debug.Log("Position " + position + " oob " + oob(position) + " oobY " + outYBound(position.y) + " oobX " + outXBound(position.x));
-        //Debug.Break();
         GameObject possible = (!oob(position)) ? (GameObject)Instantiate(original, position, rotation) : null;
         SpawnManager.setPausible(possible, _managers);
         return checkGameObject(possible);

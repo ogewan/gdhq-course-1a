@@ -1,0 +1,2 @@
+﻿#Change spawnManager substructs into subclasses
+#Add more comments and reorganize classes

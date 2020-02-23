@@ -62,9 +62,6 @@ public class Enemy : MonoBehaviour
         _boundManager = managers.boundManager;
         _storyManager = managers.storyManager;
         _pausible = GetComponent<Pausible>();
-        //_animator = GetComponent<Animator>();
-        //_audioPlayer = GetComponent<AudioSource>();
-        //_selfCollider = GetComponent<Collider2D>();
         _audioPlayer.clip = laserFire;
         StartCoroutine(fireRoutine());
         _sprite = GetComponent<SpriteRenderer>();
@@ -118,7 +115,6 @@ public class Enemy : MonoBehaviour
         {
             int sign = randomSign();
             float rotater = (transform.eulerAngles.z == 0) ? 90 * sign : transform.eulerAngles.z * -1;
-            //Debug.Log(transform.eulerAngles.z == 0);
             transform.Rotate(Vector3.forward, rotater);
             other.gameObject.GetComponent<Portal>().closePortal();
         }
@@ -239,11 +235,9 @@ public class Enemy : MonoBehaviour
             {
                 GameObject laser = _projectile.Get();
                 chooseTarget(laser);
-                //Vector3 offsetPosition = new Vector3(transform.position.x, transform.position.y - _portalOffset);
                 bool isRotateShot = armory.rotateShotPrefab.name == laser.name;
                 bool isPortal = armory.glitchShotPrefab.name == laser.name;
                 Quaternion projectileRotation = (isRotateShot) ? _rotateAim.rotation : transform.rotation;
-                //Vector3 projectilePosition = (isPortal) ? offsetPosition : transform.position;
                 if (isPortal) {
                     if (_portalContainer.transform.childCount > _portalLimit) continue;
                 }
@@ -256,7 +250,6 @@ public class Enemy : MonoBehaviour
                     firedProjectile.transform.parent = _portalContainer.transform;
 
                 }
-                //Debug.Break();
                 _audioPlayer.Play();
             }
         }

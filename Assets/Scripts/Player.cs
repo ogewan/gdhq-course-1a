@@ -267,7 +267,6 @@ public class Player : MonoBehaviour
             }
             else
             {
-                Debug.Log("OUT OF AMMO");
                 _audioPlayer.clip = laserFail;
                 _audioPlayer.Play();
             }
@@ -428,19 +427,7 @@ public class Player : MonoBehaviour
         yield return new WaitForSeconds(_powerUpDuration);
         handlePowerUpBool(type, -1);
     }
-
-    /*T registerManager<T>(string name)
-    {
-        GameObject manager = GameObject.Find(name);
-        if (manager)
-        {
-            return manager.GetComponent<T>();
-        }
-        Debug.LogError(name + " not found");
-        return default(T);
-    }
-    */
-
+    
     public void Damage()
     {
         if (_immortal) return;

@@ -273,7 +273,6 @@ public class SpawnManager : MonoBehaviour
 
             int itemCount = container.childCount;
             bool canSpawn = spawnCount >= itemCount || spawnCount == -1;
-            //Debug.Log("SpawnCount: " + spawnCount);
             if (item && canSpawn && iAmActive && _spawnActive)
             {
                 Vector3 spawnPos = generateSpawnPosition(spawnable);

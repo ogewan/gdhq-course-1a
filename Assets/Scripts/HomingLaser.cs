@@ -39,7 +39,6 @@ public class HomingLaser : MonoBehaviour
         Vector3 destination = target.position;
         Vector3 origin = transform.position;
         Vector3 targetVector = destination - origin;
-        //float angle = Vector3.Cross(targetVector, transform.up).z;
         float angle = Vector3.Cross(transform.up, targetVector).z;
         transform.Rotate(Vector3.forward, angle * spinSpeed * Time.deltaTime, Space.World);
     }

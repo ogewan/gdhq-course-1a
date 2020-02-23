@@ -123,30 +123,24 @@ public class UIManager : MonoBehaviour
 
     public void updateAmmo(int ammo, Player.shotType shot)
     {
-        //Debug.Log("ammo " + ammo + " shot " + shot);
         switch (shot)
         {
             case Player.shotType.glitch:
                 _ammoText.text = "Ammo: <color=red>G</color><color=orange>l</color><color=yellow>i</color><color=green>t</color><color=blue>c</color><color=purple>h</color> ";
-                //_ammoText.text = "Ammo: 4a";
                 break;
             case Player.shotType.homing:
                 _ammoText.text = "Ammo: <color=purple>Homing</color> ";
-                //_ammoText.text = "Ammo: 3a";
                 break;
             case Player.shotType.rotate:
                 _ammoText.text = "Ammo: <color=yellow>Rotate</color> ";
-                //_ammoText.text = "Ammo: 2a";
                 break;
             case Player.shotType.triple:
                 _ammoText.text = "Ammo: <color=red>Triple</color> ";
-                //_ammoText.text = "Ammo: 1a";
                 break;
             default:
                 _ammoText.text = "Ammo: " + ammo;
                 break;
         }
-        //Debug.Log(_ammoText.text);
     }
 
     public void yellowToken(int count)
