@@ -8,6 +8,8 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private Text _scoreText;
     [SerializeField]
+    private Text _waveText;
+    [SerializeField]
     private Text _highScoreText;
     [SerializeField]
     private Image _livesImage;
@@ -25,6 +27,9 @@ public class UIManager : MonoBehaviour
     private KillToken _killIcon;
     [SerializeField]
     private Image _starIcon;
+    [SerializeField]
+    private Text _starCountText;
+    private int _starCount = 0;
     [SerializeField]
     private Text _pauseText;
     [SerializeField]
@@ -106,6 +111,15 @@ public class UIManager : MonoBehaviour
         _scoreText.text = "Score: " + score;
     }
 
+    public void updateWave(int wave)
+    {
+        if (!_waveText.gameObject.activeInHierarchy)
+        {
+            _waveText.gameObject.SetActive(true);
+        }
+        _waveText.text = "Wave: " + wave;
+    }
+
     public void updateHighScore(int score)
     {
         _highScoreText.text = "High Score: " + score;
@@ -121,7 +135,7 @@ public class UIManager : MonoBehaviour
         _thrusterBar.value = fuel;
     }
 
-    public void updateAmmo(int ammo, Player.shotType shot)
+    public void updateAmmo(int ammo, Player.shotType shot, int maximum)
     {
         switch (shot)
         {
@@ -138,7 +152,7 @@ public class UIManager : MonoBehaviour
                 _ammoText.text = "Ammo: <color=red>Triple</color> ";
                 break;
             default:
-                _ammoText.text = "Ammo: " + ammo;
+                _ammoText.text = "Ammo: " + ammo + "/" + maximum;
                 break;
         }
     }
@@ -161,7 +175,20 @@ public class UIManager : MonoBehaviour
     public void toggleStar()
     {
         bool status = _starIcon.gameObject.activeInHierarchy;
-        _starIcon.gameObject.SetActive(!status);
+        if (!status)
+        {
+            _starIcon.gameObject.SetActive(true);
+        }
+        _starCount++;
+        if (_starCount > 1)
+        {
+            bool statusIcon = _starCountText.gameObject.activeInHierarchy;
+            if (!statusIcon)
+            {
+                _starCountText.gameObject.SetActive(true);
+            }
+            _starCountText.text = _starCount.ToString();
+        }
     }
 
     public void toggleYellow()

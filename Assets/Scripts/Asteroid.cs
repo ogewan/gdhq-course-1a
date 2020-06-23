@@ -4,12 +4,15 @@ using UnityEngine;
 
 public class Asteroid : MonoBehaviour
 {
-    [SerializeField]
-    private float _rotSpeed = 2f;
+    public float _rotSpeed = 2f;
     [SerializeField]
     private GameObject _explosion;
     [SerializeField]
     private SpawnManager _spawnManager;
+    [SerializeField]
+    private StoryManager _storyManager;
+    [SerializeField]
+    private GameManager _gameManager;
     private Pausible _pausible;
 
     void Start()
@@ -30,6 +33,10 @@ public class Asteroid : MonoBehaviour
         {
             Destroy(other.gameObject);
             _spawnManager.startSpawning();
+            if (_gameManager.getMode() == GameManager.mode.wave)
+            {
+                _storyManager.setWave(1);
+            }
             Instantiate(_explosion, transform.position, Quaternion.identity);
             Destroy(gameObject, 0.5f);
         }

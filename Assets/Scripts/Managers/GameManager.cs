@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public enum mode { easy, hard, endless, debug };
+    public enum mode { wave, classic, endless };
     public Registry _managers;
     public int scoreMult = 1;
     [SerializeField]
@@ -18,7 +18,10 @@ public class GameManager : MonoBehaviour
     private int _score = 0;
     [SerializeField]
     private int _highScore;
+    [SerializeField]
     private mode _mode;
+    [SerializeField]
+    private bool _debug = false;
     private UIManager _uIManager;
     private StoryManager _storyManager;
     private SpawnManager _spawnManager;
@@ -42,18 +45,19 @@ public class GameManager : MonoBehaviour
         if (mainMenu)
         {
             setMode(mainMenu.getMode());
+            setDebug(mainMenu.debugMode());
             Destroy(mainMenu.gameObject);
         }
     }
 
     void Start()
     {
-        if (_mode == mode.easy)
+        if (_mode == mode.classic)
         {
             scoreMult = 3;
         }
 
-        if (_mode == mode.debug)
+        if (_debug)
         {
             GameObject item = GameObject.Find("Player");
             Player player = item.GetComponent<Player>();
@@ -121,26 +125,42 @@ public class GameManager : MonoBehaviour
         _gameOver = true;
     }
 
+    public void setScoreMult(int mult)
+    {
+        scoreMult = mult;
+    }
+
+    public int getScoreMult()
+    {
+        return scoreMult;
+    }
+
     public void addScore(int score)
     {
         _score += score * scoreMult;
         _uIManager.updateScore(_score);
-        _storyManager.scoreCheck(_score);
+        if (getMode() != mode.wave)
+        {
+            _storyManager.scoreCheck(_score);
+        }
     }
 
     public void addKill(Enemy.type type, int kill=1)
     {
-        switch(type)
+        if (getMode() != mode.wave)
         {
-            case Enemy.type.Super:
-                _uIManager.yellowToken(kill);
-                break;
-            case Enemy.type.Hyper:
-                _uIManager.redToken(kill);
-                break;
-            case Enemy.type.Ultra:
-                _uIManager.greenToken(kill);
-                break;
+            switch (type)
+            {
+                case Enemy.type.Super:
+                    _uIManager.yellowToken(kill);
+                    break;
+                case Enemy.type.Hyper:
+                    _uIManager.redToken(kill);
+                    break;
+                case Enemy.type.Ultra:
+                    _uIManager.greenToken(kill);
+                    break;
+            }
         }
         _storyManager.addKill(type);
     }
@@ -164,6 +184,11 @@ public class GameManager : MonoBehaviour
     public void setMode(mode gameMode)
     {
         _mode = gameMode;
+    }
+
+    public void setDebug(bool debug)
+    {
+        _debug = debug;
     }
 
     public bool isEndlessModeUnlocked()

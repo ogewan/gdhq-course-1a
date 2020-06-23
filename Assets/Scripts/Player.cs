@@ -14,13 +14,16 @@ public class Player : MonoBehaviour
     public GameObject[] engines;
     public GameObject thruster;
     public GameObject boostThruster;
+    public GameObject absorbRings;
     public GameObject rotateAim;
     public GameObject enemyGroup;
 
     public AudioClip laserFire;
     public AudioClip laserFail;
     public AudioClip powerUpSound;
+    public bool absorbActive = false;
 
+    public float absorbStrength = 1f;
     [SerializeField]
     private GameObject _explosion;
     [SerializeField]
@@ -37,6 +40,7 @@ public class Player : MonoBehaviour
     private FireRate _fireRate = new FireRate(0);
     [SerializeField]
     private PlayerStats _stats = new PlayerStats(0);
+    private PlayerStats _baseStats = new PlayerStats(0);
     [SerializeField]
     private float _powerUpDuration = 5f;
     [SerializeField]
@@ -47,6 +51,7 @@ public class Player : MonoBehaviour
     private GameManager _gameManager;
     private SpawnManager _spawnManager;
     private BoundManager _boundManager;
+    private StoryManager _storyManager;
     private IEnumerator _powerUpTimer;
     private UIManager _uIManager;
     private AudioSource _audioPlayer;
@@ -129,11 +134,16 @@ public class Player : MonoBehaviour
 
     void Start()
     {
+        _baseStats.health = _stats.health;
+        _baseStats.shield = _stats.shield;
+        _baseStats.ammo = _stats.ammo;
+
         transform.position = new Vector3(0, 0, 0);
         _spawnManager = _managers.spawnManager;
         _uIManager = _managers.uiManager;
         _gameManager = _managers.gameManager;
         _boundManager = _managers.boundManager;
+        _storyManager = _managers.storyManager;
         _pausible = GetComponent<Pausible>();
         _uIManager.updateLives(_stats.health);
         _audioPlayer = GetComponent<AudioSource>();
@@ -146,6 +156,7 @@ public class Player : MonoBehaviour
         if (_pausible && _pausible.isPaused()) return;
         Movement();
         Shoot();
+        Absorb();
     }
 
     void OnTriggerEnter2D(Collider2D laser)
@@ -171,9 +182,36 @@ public class Player : MonoBehaviour
         _animator.SetBool("turningRight", horizontalInput > 0);
     }
 
+    void Absorb()
+    {
+        //absorbRings
+        bool absorbMode = Input.GetKey(KeyCode.C) && !_thrusterStatus.overHeat;
+        if (absorbMode && !absorbRings.activeSelf)
+        {
+            absorbActive = true;
+            absorbRings.SetActive(true);
+        }
+        else if (!absorbMode && absorbRings.activeSelf)
+        {
+            absorbActive = false;
+            absorbRings.SetActive(false);
+        }
+
+        if (absorbMode)
+        {
+            activeThruster();
+        }
+        else
+        {
+            //inactiveThruster();
+        }
+        _uIManager.updateThruster(_thrusterStatus.thrusterFuel);
+    }
+
     void thrusterControl()
     {
-        bool boostMode = Input.GetKey(KeyCode.LeftShift) && !_thrusterStatus.overHeat;
+        bool shiftPressed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        bool boostMode = shiftPressed && !_thrusterStatus.overHeat;
         if (boostMode && !boostThruster.activeSelf)
         {
             boostThruster.SetActive(true);
@@ -240,7 +278,7 @@ public class Player : MonoBehaviour
         bool rsActive = _powerUpStatus.rotateShot > 0;
         bool hsActive = _powerUpStatus.homingShot > 0;
         bool gsActive = _powerUpStatus.glitchShot > 0;
-        _uIManager.updateAmmo(_stats.ammo, gsActive ? shotType.glitch : hsActive ? shotType.homing : rsActive ? shotType.rotate : tsActive ? shotType.triple : shotType.normal);
+        _uIManager.updateAmmo(_stats.ammo, gsActive ? shotType.glitch : hsActive ? shotType.homing : rsActive ? shotType.rotate : tsActive ? shotType.triple : shotType.normal, _baseStats.ammo);
     }
 
     void Shoot()
@@ -361,8 +399,44 @@ public class Player : MonoBehaviour
                     _stats.ammo = 15;
                 }
                 break;
+            case Powerup.type.breakk:
+                if (_stats.health > 1 && instances > 0)
+                {
+                    // Break ignores shields
+                    int currentShield = _stats.shield;
+                    _stats.shield = 0;
+                    Damage();
+                    _stats.shield = currentShield;
+                }
+                break;
+            case Powerup.type.disable:
+                if (_stats.shield > 0 && instances > 0)
+                {
+                    // Disable fully removes shield.
+                    _stats.shield = 0;
+                    handleShield();
+                }
+                break;
+            case Powerup.type.noammo:
+                if (_stats.ammo > 0 && instances > 0)
+                {
+                    // Reduces avaliable ammo by half.
+                    _stats.ammo = _stats.ammo/2;
+                }
+                break;
             case Powerup.type.star:
-                _uIManager.toggleStar();
+                if (instances > 0)
+                {
+                    _uIManager.toggleStar();
+                    if (_gameManager.getMode() == GameManager.mode.wave)
+                    {
+                        _storyManager.setWave(1);
+                    } else
+                    {
+                        _spawnManager.getItems()[0].setActive(true);
+                    }
+                    _gameManager.setScoreMult(_gameManager.getScoreMult() + 1);
+                }
                 break;
             default:
                 break;
@@ -430,7 +504,7 @@ public class Player : MonoBehaviour
     
     public void Damage()
     {
-        if (_immortal) return;
+        //if (_immortal) return;
         if (_stats.shield > 0)
         {
             _stats.shield--;
@@ -439,7 +513,15 @@ public class Player : MonoBehaviour
         }
         _stats.health--;
         _uIManager.shakeScreen(dmgShake);
+        //GOD MODE
+        if (_immortal && _stats.health <= 0)
+        {
+            _stats.health = 1;
+            return;
+        }
+        //END GOD MODE
         _uIManager.updateLives(_stats.health);
+
         if (_stats.health <= 0)
         {
             playerDies();

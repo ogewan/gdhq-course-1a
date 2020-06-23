@@ -106,6 +106,15 @@ MonoBehaviour:
   _portalOffset: 3
   _portalLimit: 30
   _portalContainer: {fileID: 0}
+  _powerupContainer: {fileID: 0}
+  _gunners:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  _regenerateTime: 4
+  _activated: 1
+  _indicator: {fileID: 0}
+  _newShields: {fileID: 0}
   _health: 1
   armory: {fileID: 5785800567083993149, guid: c5a080ec07de75947a7bdd0d61df0f3e, type: 3}
   laserFire: {fileID: 8300000, guid: 75676f361bdfeaf41a46623e95df3dbc, type: 3}
@@ -121,6 +130,25 @@ MonoBehaviour:
   _sprite: {fileID: 0}
   _scaler: 1
   managers: {fileID: 0}
+  rewards:
+    pool:
+    - obj: {fileID: 3965051160634728653, guid: 592a7169d621d8645b964dd169a7b6c3, type: 3}
+      probability: 3
+    - obj: {fileID: 8575557388215771814, guid: 816f2c7ceea7c93418919f0290058af9, type: 3}
+      probability: 2
+    - obj: {fileID: 4927599172381673420, guid: 56462cf69a96e344e978a468a3e118ca, type: 3}
+      probability: 1
+    container: {fileID: 0}
+    timeRange: {x: 0, y: 0}
+    spawnCount: 0
+    useParentSpawnPosition: 0
+    spawnPosition: {x: 0, y: 0}
+    randomSpawn:
+      x: 0
+      y: 0
+      z: 0
+    spawnActive: 0
+  rewardChance: 1
 --- !u!50 &5245035945381954877
 Rigidbody2D:
   serializedVersion: 4

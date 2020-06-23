@@ -36,11 +36,14 @@ public class HomingLaser : MonoBehaviour
 
     void Target()
     {
-        Vector3 destination = target.position;
-        Vector3 origin = transform.position;
-        Vector3 targetVector = destination - origin;
-        float angle = Vector3.Cross(transform.up, targetVector).z;
-        transform.Rotate(Vector3.forward, angle * spinSpeed * Time.deltaTime, Space.World);
+        homing(transform, target, spinSpeed);
+    }
+
+    static public void homing(Transform origin, Transform destination, float spin=5f)
+    {
+        Vector3 targetVector = destination.position - origin.position;
+        float angle = Vector3.Cross(origin.up, targetVector).z;
+        origin.Rotate(Vector3.forward, angle * spin * Time.deltaTime, Space.World);
     }
 
     void Glitched()

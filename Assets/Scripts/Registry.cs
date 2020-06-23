@@ -9,4 +9,5 @@ public class Registry : MonoBehaviour
     public UIManager uiManager;
     public BoundManager boundManager;
     public SpawnManager spawnManager;
+    public WaveManager waveManager;
 }

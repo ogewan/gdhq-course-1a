@@ -11,6 +11,8 @@ public class SpawnManager : MonoBehaviour
     [SerializeField]
     private GameObject _portalContainer;
     [SerializeField]
+    private GameObject _powerupContainer;
+    [SerializeField]
     private Transform _player;
     [SerializeField]
     private Spawnable[] items;
@@ -40,95 +42,6 @@ public class SpawnManager : MonoBehaviour
     }
 
     [System.Serializable]
-    public struct Spawnlet
-    {
-        public GameObject obj;
-        public int probability;
-
-        public Spawnlet(GameObject _obj, int _probability = 1)
-        {
-            this.obj = _obj;
-            this.probability = _probability;
-        }
-    }
-
-    [System.Serializable]
-    public struct Spawnable
-    {
-        public Spawnlet[] pool;
-        // if no container, send to top level
-        public GameObject container;
-        public Vector2 timeRange;
-        public int spawnCount;
-        public int oldSpawnCount;
-        public bool useParentSpawnPosition;
-        public Vector2 spawnPosition;
-        public Vector3Bool randomSpawn;
-        public bool spawnActive;
-        [HideInInspector]
-        public IEnumerator spawnTimer;
-        public Randomizer item;
-
-        Spawnable(Spawnlet[] _pool, GameObject _container, Vector2 _timeRange)
-        {
-            this.pool = _pool;
-            this.container = _container;
-            this.spawnCount = -1;
-            this.oldSpawnCount = 0;
-            this.useParentSpawnPosition = true;
-            this.spawnPosition = Vector3.zero;
-            this.randomSpawn = new Vector3Bool(false, false, false);
-            this.spawnActive = true;
-            this.timeRange = _timeRange;
-            this.spawnTimer = null;
-            this.item = null;
-        }
-
-        public GameObject getObject()
-        {
-            init();
-            GameObject target = item.Get();
-            if (target == null)
-            {
-                rebuild();
-                target = item.Get();
-            }
-            return target;
-        }
-
-        public void rebuild()
-        {
-            init();
-            item.rebuild(pool);
-        }
-
-        public void changeOdds(int index, int probability)
-        {
-            pool[index].probability = probability;
-            rebuild();
-        }
-
-        private void init()
-        {
-            if (item == null)
-            {
-                this.item = new Randomizer(pool);
-            }
-        }
-
-        public void freezeSpawn()
-        {
-            oldSpawnCount = spawnCount;
-            spawnCount = 0;
-        }
-
-        public void restoreSpawn()
-        {
-            spawnCount = oldSpawnCount;
-        }
-    }
-
-    [System.Serializable]
     public struct Vector3Bool
     {
         public bool x;
@@ -143,45 +56,6 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
-    public class Randomizer
-    {
-        [SerializeField]
-        private List<GameObject> spawnTable;
-
-        public Randomizer(Spawnlet[] spawnlets)
-        {
-            this.spawnTable = buildSpawnTable(spawnlets);
-        }
-
-        private static List<GameObject> buildSpawnTable(Spawnlet[] items)
-        {
-            List<GameObject> table = new List<GameObject>();
-            foreach (Spawnlet item in items)
-            {
-                int count = item.probability;
-                for (int i = 0; i < count; i++)
-                {
-                    table.Add(item.obj);
-                }
-            }
-            return table;
-        }
-
-        public void rebuild(Spawnlet[] items)
-        {
-            this.spawnTable = buildSpawnTable(items);
-        }
-
-        public GameObject Get()
-        {
-            if (this.spawnTable.Count <= 0)
-            {
-                return null;
-            }
-            int target = Random.Range(0, this.spawnTable.Count);
-            return this.spawnTable[target];
-        }
-    }
 
     void setTimer(Spawnable item)
     {
@@ -202,17 +76,17 @@ public class SpawnManager : MonoBehaviour
         _gameManager = _managers.gameManager;
     }
 
-    void enemyHasFirstSpawn(GameObject item, Spawnable spawnable, Transform container)
+    void enemyHasFirstSpawn_superCheck(GameObject item, Spawnable spawnable)
     {
         // ENEMY UNIQUE
         Enemy enemy;
-        if (item.tag == "Enemy")
+        if (item.tag == "Enemy" && _gameManager.getMode() == GameManager.mode.classic)
         {
             enemy = item.GetComponent<Enemy>();
-            enemy.getType();
-            if (_gameManager.firstSpawn(enemy.getType()))
+            Enemy.type type = enemy.getType();
+            if (type == Enemy.type.Super && _gameManager.firstSpawn(type))
             {
-                specialSpawn(item, spawnable, container);
+                spawnable.setActive(false);
             }
         }
     }
@@ -250,7 +124,7 @@ public class SpawnManager : MonoBehaviour
         while (_spawnActive)
         {
             Transform container = spawnable.container.transform;
-            bool iAmActive = spawnable.spawnActive;
+            bool iAmActive = spawnable.getActive();
             float spawnTime = getSpawnTime(spawnable.timeRange);
 
             yield return new WaitForSeconds(spawnTime);
@@ -258,7 +132,8 @@ public class SpawnManager : MonoBehaviour
 
             GameObject item;
             Transform parent = null;
-            if (spawnQueue.Count > 1)
+            bool specialSpawn = spawnQueue.Count > 0;
+            if (specialSpawn)
             {
                 GameObjectWP special = spawnQueue.Dequeue();
                 item = special.item;
@@ -268,16 +143,17 @@ public class SpawnManager : MonoBehaviour
             {
                 item = spawnable.getObject();
             }
-            enemyHasFirstSpawn(item, spawnable, container);
+            enemyHasFirstSpawn_superCheck(item, spawnable);
             int spawnCount = spawnable.spawnCount;
 
-            int itemCount = container.childCount;
-            bool canSpawn = spawnCount >= itemCount || spawnCount == -1 || _gameManager.isEndlessModeUnlocked();
-            if (item && canSpawn && iAmActive && _spawnActive)
+            int itemCount = container.childCount + 1;
+            bool canSpawn =  spawnCount >= itemCount || spawnCount == -1 || _gameManager.isEndlessModeUnlocked();
+            if (item && (specialSpawn || canSpawn && iAmActive) && _spawnActive)
             {
                 Vector3 spawnPos = generateSpawnPosition(spawnable);
                 setPausible(item, _managers);
                 setEnemy(item, _managers);
+                setPowerup(item, _managers);
                 GameObject newItem = Instantiate(item, spawnPos, Quaternion.identity, parent ? parent : container);
             }
         }
@@ -290,6 +166,7 @@ public class SpawnManager : MonoBehaviour
             item.GetComponent<Enemy>().managers = _managers;
             item.GetComponent<Enemy>().player = _player.transform;
             item.GetComponent<Enemy>().setPortalContainer(_portalContainer);
+            item.GetComponent<Enemy>().setPowerupContainer(_powerupContainer);
         }
     }
 
@@ -313,6 +190,23 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
+    void setPowerup(GameObject item, Registry manager)
+    {
+        if (item.tag == "Powerup" || item.tag == "Star")
+        {
+            Player player = _player.GetComponent<Player>();
+            if (player)
+            {
+                Powerup powerup = item.GetComponent<Powerup>();
+                powerup.player = player;
+                powerup.playerPosition = _player;
+            } else
+            {
+                Debug.Log("NO PLAYER SET");
+            }
+        }
+    }
+
     public void playerDeath()
     {
         _spawnActive = false;
@@ -326,11 +220,35 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
-    public void specialSpawn(GameObject item, Spawnable spawnable, Transform parent)
+    public void specialSpawn(GameObject item, Transform parent)
     {
-        oldSpawnCount = spawnable.spawnCount;
-        spawnable.spawnCount = 1;
         spawnQueue.Enqueue(new GameObjectWP(item, parent));
+    }
+
+    [System.Serializable]
+    public struct spawnIngredient
+    {
+        public GameObject item;
+        public Transform parent;
+        public int count;
+
+        public spawnIngredient(GameObject item, Transform parent, int count = 1)
+        {
+            this.item = item;
+            this.parent = parent;
+            this.count = count;
+        }
+    }
+
+    public void spawnRecipe(spawnIngredient[] ingredients)
+    {
+        foreach (spawnIngredient ingredient in ingredients)
+        {
+            for (int i = 0; i < ingredient.count; i++)
+            {
+                spawnQueue.Enqueue(new GameObjectWP(ingredient.item, ingredient.parent));
+            }
+        }
     }
 
     public Spawnable[] getItems()

@@ -9,15 +9,25 @@ using UnityEngine;
 public class StoryManager : MonoBehaviour
 {
     public Registry managers;
+    public GameObject normalEnemy;
+    public GameObject superEnemy;
     public GameObject hyperEnemy;
     public GameObject ultraEnemy;
     public GameObject tohouEnemy;
+    public GameObject bomerEnemy;
+    public GameObject newerEnemy;
     public GameObject starCollectible;
     public int enemySpawnableIndex = 0;
+    public int waveLevel = 0;
+    [SerializeField]
+    private int _killCount = 0;
     public GameObject _portalContainer;
 
+    private GameManager _gameManager;
     private SpawnManager _spawnManager;
     private BoundManager _boundManager;
+    private UIManager _uiManager;
+    private WaveManager _waveManager;
     [SerializeField]
     private Transform _playerPosition;
     [SerializeField]
@@ -67,8 +77,13 @@ public class StoryManager : MonoBehaviour
 
     void Start()
     {
+        _gameManager = managers.gameManager;
         _spawnManager = managers.spawnManager;
         _boundManager = managers.boundManager;
+        _uiManager = managers.uiManager;
+        _waveManager = managers.waveManager;
+        Spawnable[] items = _spawnManager.getItems();
+        items[enemySpawnableIndex].setActive(false);
     }
 
     bool multipleOf3(Enemy.type type)
@@ -106,53 +121,28 @@ public class StoryManager : MonoBehaviour
     public void addKill(Enemy.type type)
     {
         Dictionary<Enemy.type, int> killed = _enemyTriggers.killed;
-        SpawnManager.Spawnable[] items = _spawnManager.getItems();
-        _spawnManager.getItems()[enemySpawnableIndex].freezeSpawn();
 
         if (!killed.ContainsKey(type))
         {
             killed[type] = 0;
         }
         killed[type]++;
-        if (killed[type] == _killTriggers[type])
+        _killCount++;
+        if (_gameManager.getMode() == GameManager.mode.classic)
         {
-            //Generally, the stage will be change to a specific number for a killed type
-            //However, enemy types are spawned sequentially, so it shouldn't be possible to hit gates out of order
-            _stage++;
-            switch (_stage)
-            {
-                case 1:
-                    break;
-                case 2:
-                    _spawnManager.specialSpawn(hyperEnemy, items[0], _enemyContainer);
-                    break;
-                case 3:
-                    _spawnManager.specialSpawn(ultraEnemy, items[0], _enemyContainer);
-                    break;
-                case 4:
-                    GameObject tohou = _boundManager.bsInstantiate(tohouEnemy, new Vector3(0, 4), Quaternion.identity);
-
-                    SpawnManager.setPausible(tohou, managers);
-                    tohou.GetComponent<Enemy>().managers = managers;
-                    tohou.GetComponent<Enemy>().player = _playerPosition;
-                    tohou.transform.parent = _enemyContainer;
-                    tohou.GetComponent<Enemy>().setPortalContainer(_portalContainer);
-                    _spawnManager.getItems()[enemySpawnableIndex].freezeSpawn();
-                    break;
-                case 5:
-                    _spawnManager.getItems()[enemySpawnableIndex].restoreSpawn();
-                    //Spawn star
-                    GameObject star =_boundManager.bsInstantiate(starCollectible, new Vector3(0, 6), Quaternion.identity);
-                    star.transform.parent = _powerupContainer;
-                    break;
-            }
+            classicStory(type);
         }
+        else
+        {
+            waveStory(type);
+        }
+
     }
 
     public void scoreCheck(int score)
     {
         int quantizedScore = floorMinima(score, _scoreGates);
-        SpawnManager.Spawnable[] items = _spawnManager.getItems();
+        Spawnable[] items = _spawnManager.getItems();
 
         if (_recordedScore != quantizedScore)
         {
@@ -183,8 +173,81 @@ public class StoryManager : MonoBehaviour
                 changeOdds = false;
             }
             if (changeOdds) items[0].changeOdds(targetIndex, targetCount);
-            if (target != null) _spawnManager.specialSpawn(target, items[0], _enemyContainer);
+            //if (target != null) _spawnManager.specialSpawn(target, items[0], _enemyContainer);
         }
+    }
+
+    public void classicStory(Enemy.type type)
+    {
+        Dictionary<Enemy.type, int> killed = _enemyTriggers.killed;
+        Spawnable[] items = _spawnManager.getItems();
+        if (killed[type] == 1 && type != Enemy.type.Normal)
+        {
+            items[enemySpawnableIndex].setActive(true);
+        }
+        if (killed[type] == _killTriggers[type])
+        {
+            //Generally, the stage will be change to a specific number for a killed type
+            //However, enemy types are spawned sequentially, so it shouldn't be possible to hit gates out of order
+            _stage++;
+            switch (_stage)
+            {
+                case 1:
+                    break;
+                case 2:
+                    items[enemySpawnableIndex].setActive(false);
+                    _spawnManager.specialSpawn(hyperEnemy, _enemyContainer);
+                    break;
+                case 3:
+                    items[enemySpawnableIndex].setActive(false);
+                    _spawnManager.specialSpawn(ultraEnemy, _enemyContainer);
+                    break;
+                case 4:
+                    // Boss is spawned directly because special spawn doesn't take position coordinates
+                    items[enemySpawnableIndex].setActive(false);
+                    GameObject tohou = _boundManager.bsInstantiate(tohouEnemy, new Vector3(0, 4), Quaternion.identity);
+                
+                    SpawnManager.setPausible(tohou, managers);
+                    tohou.GetComponent<Enemy>().managers = managers;
+                    tohou.GetComponent<Enemy>().player = _playerPosition;
+                    tohou.transform.parent = _enemyContainer;
+                    tohou.GetComponent<Enemy>().setPortalContainer(_portalContainer);
+                    tohou.GetComponent<Enemy>().setPowerupContainer(_powerupContainer.gameObject);
+                    break;
+                case 5:
+                    items[enemySpawnableIndex].setActive(false);
+                    break;
+            }
+        }
+        if (_gameManager.getMode() == GameManager.mode.endless)
+        {
+            // In endless mode, enemies spawn with subbosses/bosses
+            items[enemySpawnableIndex].setActive(true);
+        }
+    }
+
+    public void waveStory(Enemy.type type = Enemy.type.None)
+    {
+        if (type == Enemy.type.None)
+        {
+            // RESET
+            Spawnable[] items = _spawnManager.getItems();
+            //items[enemySpawnableIndex].clearSpawned();
+            _killCount = 0;
+        }
+
+        bool advance = _waveManager.waveStory(waveLevel, _killCount);
+        if (advance)
+        {
+            setWave(waveLevel + 1);
+        }
+    }
+
+    public void setWave(int wave)
+    {
+        waveLevel = wave;
+        _uiManager.updateWave(wave);
+        waveStory();
     }
 }
 

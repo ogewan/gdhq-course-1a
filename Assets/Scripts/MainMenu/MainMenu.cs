@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class MainMenu : MonoBehaviour
 {
     private GameManager.mode _mode;
+    private bool _debug;
     private GameManager _newManager;
     public GameObject endlessButton;
 
@@ -20,15 +21,15 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    public void easyGame()
+    public void waveGame()
     {
-        _mode = GameManager.mode.easy;
+        _mode = GameManager.mode.wave;
         loadGame();
     }
 
-    public void hardGame()
+    public void classicGame()
     {
-        _mode = GameManager.mode.hard;
+        _mode = GameManager.mode.classic;
         loadGame();
     }
 
@@ -38,15 +39,31 @@ public class MainMenu : MonoBehaviour
         loadGame();
     }
 
-    public void debugMode()
+    public void waveDebug()
     {
-        _mode = GameManager.mode.debug;
-        loadGame();
+        _debug = true;
+        waveGame();
+    }
+
+    public void classicDebug()
+    {
+        _debug = true;
+        classicGame();
+    }
+
+    public void helpMenu()
+    {
+        SceneManager.LoadScene(2);
     }
 
     public GameManager.mode getMode()
     {
         return _mode;
+    }
+
+    public bool debugMode()
+    {
+        return _debug;
     }
 
     public void loadGame()

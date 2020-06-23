@@ -119,6 +119,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
         type: 3}
+      propertyPath: rewards.pool.Array.size
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
+        type: 3}
       propertyPath: enemyType
       value: 2
       objectReference: {fileID: 0}
@@ -140,18 +145,61 @@ PrefabInstance:
     - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
         type: 3}
       propertyPath: _enemySpeed
-      value: 6
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
         type: 3}
       propertyPath: _scoreValue
-      value: 1000
+      value: 2000
       objectReference: {fileID: 0}
     - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
         type: 3}
       propertyPath: _rotateAim
       value: 
       objectReference: {fileID: 8103629306140927912}
+    - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
+        type: 3}
+      propertyPath: rewards.pool.Array.data[3].obj
+      value: 
+      objectReference: {fileID: 649311545451957853, guid: d2242bffd08581b4da5ad0ea1aae6977,
+        type: 3}
+    - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
+        type: 3}
+      propertyPath: rewards.pool.Array.data[3].probability
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
+        type: 3}
+      propertyPath: rewards.pool.Array.data[4].obj
+      value: 
+      objectReference: {fileID: 2475539817636154612, guid: ac1a1a7adff10c44da311238d8d621f8,
+        type: 3}
+    - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
+        type: 3}
+      propertyPath: rewards.pool.Array.data[4].probability
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
+        type: 3}
+      propertyPath: rewards.pool.Array.data[5].obj
+      value: 
+      objectReference: {fileID: 5404284021994177758, guid: 7ed16ee32aa6f24469d594f58245eacd,
+        type: 3}
+    - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
+        type: 3}
+      propertyPath: rewards.pool.Array.data[5].probability
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
+        type: 3}
+      propertyPath: rewards.pool.Array.data[1].probability
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5195576151505966935, guid: c801279204fd3ce4f8f97be3ff202b54,
+        type: 3}
+      propertyPath: rewards.pool.Array.data[2].probability
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 5312369513148128656, guid: c801279204fd3ce4f8f97be3ff202b54,
         type: 3}
       propertyPath: m_LocalPosition.x

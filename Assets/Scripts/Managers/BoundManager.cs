@@ -43,16 +43,23 @@ public class BoundManager : MonoBehaviour
         switch (other.tag)
         {
             case "Enemy":
-                Enemy(x, y, other);
+                Enemy enemy = other.GetComponent<Enemy>();
+                Enemy.type eType = enemy.getType();
+                bool tohou = eType == Enemy.type.Tohou || eType == Enemy.type.Tohou_gun;
+                //TOHOU TYPES IGNORE BOUNDS
+                if (!tohou)
+                {
+                    EnemyColl(x, y, other);
+                }
                 break;
             case "Player":
-                Player(x, y, other);
+                PlayerColl(x, y, other);
                 break;
             case "EnemySuperLaser":
-                EnemySuperLaser(x, y, other);
+                EnemySuperLaserColl(x, y, other);
                 break;
             case "Star":
-                star(x, y, other);
+                starColl(x, y, other);
                 break;
             case "TEST":
                 break;
@@ -98,7 +105,7 @@ public class BoundManager : MonoBehaviour
         return original;
     }
 
-    void Player(float xPos, float yPos, Collider2D player)
+    void PlayerColl(float xPos, float yPos, Collider2D player)
     {
         if (outXBound(xPos))
         {
@@ -129,12 +136,12 @@ public class BoundManager : MonoBehaviour
         }
     }
 
-    void Enemy(float xPos, float yPos, Collider2D enemy)
+    void EnemyColl(float xPos, float yPos, Collider2D enemy)
     {
         randomWrap(xPos, yPos, enemy);
     }
 
-    void EnemySuperLaser(float xPos, float yPos, Collider2D enemy)
+    void EnemySuperLaserColl(float xPos, float yPos, Collider2D enemy)
     {
         randomWrap(xPos, yPos, enemy);
         SpriteRenderer sprite = enemy.GetComponent<SpriteRenderer>();
@@ -142,7 +149,7 @@ public class BoundManager : MonoBehaviour
         enemy.tag = "EnemyLaser";
     }
 
-    void star(float xPos, float yPos, Collider2D item)
+    void starColl(float xPos, float yPos, Collider2D item)
     {
         randomWrap(xPos, yPos, item);
     }

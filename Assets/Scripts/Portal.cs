@@ -8,11 +8,13 @@ public class Portal : MonoBehaviour
     [SerializeField]
     private float animTime = 0.65f;
     private Animator _animator;
+    [SerializeField]
+    private bool _forever = false;
     // Start is called before the first frame update
     void Start()
     {
         _animator = GetComponent<Animator>();
-        StartCoroutine(selfDestruct());
+        if (!_forever) StartCoroutine(selfDestruct());
     }
 
     IEnumerator selfDestruct()

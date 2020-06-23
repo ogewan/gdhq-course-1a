@@ -12,6 +12,8 @@ TagManager:
   - TEST
   - Star
   - Portal
+  - Glitch
+  - Ray
   layers:
   - Default
   - TransparentFX
